@@ -36,7 +36,6 @@ class StudentResponse(StudentBase):
 
 
 class StudentData(StudentBase):
-    pass
 
     class Config:
         json_schema_extra = {
@@ -53,11 +52,9 @@ class StudentData(StudentBase):
 
 class TeacherResponse(TeacherBase):
     id:int
-    pass
 
 
 class TeacherData(TeacherBase):
-    pass
 
     class Config:
         json_schema_extra = {
@@ -74,7 +71,6 @@ class TeacherData(TeacherBase):
 
 class ClassResponse(ClassesBase):
     id:int
-    pass
 
 
 class ClassData(ClassesBase):
@@ -92,3 +88,7 @@ class ClassData(ClassesBase):
 
 class ReservationResponse(ClassResponse):
     students: List[StudentResponse]
+
+
+
+

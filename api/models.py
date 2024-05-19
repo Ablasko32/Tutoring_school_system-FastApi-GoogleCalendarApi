@@ -18,7 +18,7 @@ class Students(Base):
     birth_year = Column(Integer)
 
     classes = relationship(
-        "Classes", secondary="students_classes", back_populates="students"
+        "Classes", secondary="students_classes", back_populates="students", lazy=True
     )
     invoices = relationship("Invoices", back_populates="student")
 
@@ -51,8 +51,7 @@ class Classes(Base):
 
     teacher = relationship("Teachers", back_populates="classes", uselist=False)
     students = relationship(
-        "Students", secondary="students_classes", back_populates="classes"
-    )
+        "Students", secondary="students_classes", back_populates="classes", lazy=True)
 
 
 class StudentsClasses(Base):

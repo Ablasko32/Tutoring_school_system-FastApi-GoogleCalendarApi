@@ -5,7 +5,7 @@ from fastapi import APIRouter, Query, status
 from .. import crud
 from ..db_manager import db_dependancy
 from ..models import Teachers
-from ..schemas import TeacherData, TeacherResponse
+from ..schemas import TeacherData, TeacherResponse, ClassResponse
 
 router = APIRouter(prefix="/teachers", tags=["Teachers"])
 
@@ -39,5 +39,10 @@ async def update_teacher(
 
 @router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_student(db: db_dependancy, id: int = Query(gt=0)):
-    """Delete student via ID"""
+    """Delete teacher via ID"""
     return await crud.delete_item(db, id, Teachers)
+
+@router.get("/classes", status_code=status.HTTP_200_OK,response_model=List[ClassResponse])
+async def get_teacher_classes(db:db_dependancy, teacher_id:int=Query(gt=0)):
+    """Returns teacher model with loaded classes using ClassResponse schema"""
+    return await crud.get_all_teacher_classes(db, teacher_id)

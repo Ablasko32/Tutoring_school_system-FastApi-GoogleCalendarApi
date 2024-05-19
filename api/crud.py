@@ -1,7 +1,8 @@
 from fastapi import HTTPException, status
 from sqlalchemy import delete, select, table, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload,lazyload
+from sqlalchemy.exc import SQLAlchemyError
 
 from .models import *
 from .schemas import *
@@ -38,8 +39,12 @@ async def update_item(db: AsyncSession, payload, id: int, Table: table):
 async def add_item(db: AsyncSession, payload, Table: table):
     """Add new student by passing student data item, returns new student"""
     new_item = Table(**payload.dict())
-    db.add(new_item)
-    await db.commit()
+    try:
+        db.add(new_item)
+        await db.commit()
+    except SQLAlchemyError:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Item already exits")
+
     await db.refresh(new_item)
     return new_item
 
@@ -62,6 +67,15 @@ async def get_all_teachers(db: AsyncSession, page: int, limit: int):
     query = select(Teachers).offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
+
+async def get_all_teacher_classes(db:AsyncSession, teacher_id:int):
+    """Retruns teacher model with all classes"""
+    query = select(Teachers).options(joinedload(Teachers.classes)).filter(Teachers.id == teacher_id)
+    teacher_result = await db.execute(query)
+    teacher = teacher_result.scalars().first()
+    if teacher is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Teacher ID not found")
+    return teacher.classes
 
 
 # classes router
@@ -168,3 +182,16 @@ async def remove_student_from_reservations(db:AsyncSession, student_id:int, clas
     await db.commit()
     await db.refresh(class_object)
     return class_object
+
+async def get_student_classes(db: AsyncSession, student_id: int):
+    """Return all stundet classes"""
+    query = select(Students).options(joinedload(Students.classes)).filter(Students.id==student_id)
+    student_result = await db.execute(query)
+    student = student_result.scalars().first()
+
+    if student is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Student ID not found"
+        )
+
+    return student.classes
