@@ -7,7 +7,7 @@ class StudentBase(BaseModel):
     email: str
     phone_num: str
     parent_phone: str
-    age: int
+    birth_year: int
 
 
 class StudentResponse(StudentBase):
@@ -25,6 +25,6 @@ class StudentData(StudentBase):
                 "email": "john@email.com",
                 "phone_num": "9786531",
                 "parent_phone": "9873611",
-                "age": 14,
+                "birth_year": 2007,
             }
         }

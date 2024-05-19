@@ -15,7 +15,7 @@ class Students(Base):
     email = Column(String(250), unique=True, nullable=False)
     phone_num = Column(String(100), nullable=False)
     parent_phone = Column(String(100))
-    age = Column(Integer)
+    birth_year = Column(Integer)
 
     classes = relationship(
         "Classes", secondary="students_classes", back_populates="students"
