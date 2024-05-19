@@ -4,6 +4,7 @@ from fastapi import APIRouter, Query, status
 
 from .. import crud
 from ..db_manager import db_dependancy
+from ..models import Students
 from ..schemas import StudentData, StudentResponse
 
 router = APIRouter(prefix="/students", tags=["Students"])
@@ -15,7 +16,7 @@ router = APIRouter(prefix="/students", tags=["Students"])
 async def add_new_student(db: db_dependancy, student: StudentData):
     """Add new student to database using StudentData schema,
     returns student model"""
-    return await crud.add_student(db, student)
+    return await crud.add_item(db, student, Students)
 
 
 @router.get(
@@ -33,10 +34,10 @@ async def update_student(
     db: db_dependancy, student: StudentData, id: int = Query(gt=0)
 ):
     """Update student model via ID, use StudentData schema"""
-    return await crud.update_student(db, student, id)
+    return await crud.update_item(db, student, id, Students)
 
 
 @router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_student(db: db_dependancy, id: int = Query(gt=0)):
     """Delete student via ID"""
-    return await crud.delete_student(db, id)
+    return await crud.delete_item(db, id, Students)

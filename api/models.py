@@ -39,7 +39,7 @@ class Teachers(Base):
 
 
 class Classes(Base):
-    """Keeps track of teachers"""
+    """Keeps track of classes"""
 
     __tablename__ = "classes"
     id = Column(Integer, primary_key=True)

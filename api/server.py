@@ -2,7 +2,8 @@ from fastapi import FastAPI
 
 from .db_manager import async_engine
 from .models import *
-from .Routers.students import router as student_router
+from .Routers import (class_route, reservations_route, students_route,
+                      teachers_route)
 
 app = FastAPI(title="Pararel system")
 
@@ -17,4 +18,7 @@ async def on_startup():
     await init_db()
 
 
-app.include_router(student_router)
+app.include_router(students_route.router)
+app.include_router(teachers_route.router)
+app.include_router(class_route.router)
+app.include_router(reservations_route.router)
