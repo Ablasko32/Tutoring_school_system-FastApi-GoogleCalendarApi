@@ -31,6 +31,7 @@ class ClassesBase(BaseModel):
 
 
 class StudentResponse(StudentBase):
+    id:int
     pass
 
 
@@ -51,6 +52,7 @@ class StudentData(StudentBase):
 
 
 class TeacherResponse(TeacherBase):
+    id:int
     pass
 
 
@@ -71,6 +73,7 @@ class TeacherData(TeacherBase):
 
 
 class ClassResponse(ClassesBase):
+    id:int
     pass
 
 
@@ -87,5 +90,5 @@ class ClassData(ClassesBase):
         }
 
 
-class ReservationResponse(ClassesBase):
-    students: List[StudentBase]
+class ReservationResponse(ClassResponse):
+    students: List[StudentResponse]

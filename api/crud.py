@@ -74,6 +74,7 @@ async def get_all_classes(db: AsyncSession, page: int, limit: int):
 
 
 async def add_new_class(db: AsyncSession, class_data):
+    """Add new class to db,cant assign two classes on the same date/time, returns 409 conflict if tried"""
     target_date = class_data.class_date
     target_time = class_data.class_hours
     query = (
@@ -97,6 +98,8 @@ async def add_new_class(db: AsyncSession, class_data):
 
 # reservations route
 async def add_new_reservation(db: AsyncSession, class_id: int, student_id: int):
+    """Function to add new reservation to db.Takes class_id and student_id, checks class capacity, wont allow reservation if class is full,
+    returns a class with all students"""
     query = (
         select(Classes)
         .options(joinedload(Classes.students))
@@ -107,7 +110,7 @@ async def add_new_reservation(db: AsyncSession, class_id: int, student_id: int):
 
     if class_object is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Class not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Class ID not found"
         )
 
     if len(class_object.students) >= class_object.class_size:
@@ -128,4 +131,40 @@ async def add_new_reservation(db: AsyncSession, class_id: int, student_id: int):
     await db.commit()
     await db.refresh(class_object)
 
+    return class_object
+
+
+async def get_class_reservations(db:AsyncSession, class_id:int):
+    """Returns joinedload class object with all students"""
+    query = select(Classes).options(joinedload(Classes.students)).filter(Classes.id==class_id)
+    result = await db.execute(query)
+    result_object = result.scalars().first()
+    if result_object is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Class ID not found"
+        )
+    return result_object
+
+async def remove_student_from_reservations(db:AsyncSession, student_id:int, class_id:int):
+    """Remove student from linked class, returns 404 if student noti in class or if student/class ID not found"""
+    query = select(Classes).options(joinedload(Classes.students)).filter(Classes.id ==class_id)
+    result = await db.execute(query)
+    class_object = result.scalars().first()
+    if class_object is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Class ID not found"
+        )
+    student_query = select(Students).filter(Students.id == student_id)
+    student_result = await db.execute(student_query)
+    student = student_result.scalars().first()
+
+    if student is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Student ID not found"
+        )
+    if student not in class_object.students:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not in the class")
+    class_object.students.remove(student)
+    await db.commit()
+    await db.refresh(class_object)
     return class_object
