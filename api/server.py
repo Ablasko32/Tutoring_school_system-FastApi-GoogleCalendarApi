@@ -1,9 +1,10 @@
 from fastapi import FastAPI
 
 from .db_manager import async_engine
+from .logger import db_logger, uvicorn_logger
 from .models import *
-from .Routers import (classes_route, reservations_route, students_route,
-                      teachers_route, invoices_route)
+from .Routers import (classes_route, invoices_route, reservations_route,
+                      students_route, teachers_route)
 
 app = FastAPI(title="Pararel system")
 

@@ -51,7 +51,8 @@ class Classes(Base):
 
     teacher = relationship("Teachers", back_populates="classes", uselist=False)
     students = relationship(
-        "Students", secondary="students_classes", back_populates="classes", lazy=True)
+        "Students", secondary="students_classes", back_populates="classes", lazy=True
+    )
 
 
 class StudentsClasses(Base):

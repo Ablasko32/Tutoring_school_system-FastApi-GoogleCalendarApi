@@ -31,7 +31,7 @@ class ClassesBase(BaseModel):
 
 
 class StudentResponse(StudentBase):
-    id:int
+    id: int
     pass
 
 
@@ -51,7 +51,7 @@ class StudentData(StudentBase):
 
 
 class TeacherResponse(TeacherBase):
-    id:int
+    id: int
 
 
 class TeacherData(TeacherBase):
@@ -70,7 +70,7 @@ class TeacherData(TeacherBase):
 
 
 class ClassResponse(ClassesBase):
-    id:int
+    id: int
 
 
 class ClassData(ClassesBase):
@@ -89,12 +89,14 @@ class ClassData(ClassesBase):
 class ReservationResponse(ClassResponse):
     students: List[StudentResponse]
 
+
 class InvoicesBase(BaseModel):
-    student_id:int
-    invoice_date:date
-    description:str
-    payment_status:bool
-    amount:float
+    student_id: int
+    invoice_date: date
+    description: str
+    payment_status: bool
+    amount: float
+
 
 class InvoiceData(InvoicesBase):
     class Config:
@@ -104,9 +106,10 @@ class InvoiceData(InvoicesBase):
                 "invoice_date": "2024-05-01",
                 "description": "New invoice",
                 "payment_status": False,
-                "amount": 17.50
+                "amount": 17.50,
             }
         }
 
+
 class InvoiceResponse(InvoicesBase):
-    id:int
+    id: int

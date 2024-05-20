@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
 from sqlalchemy import delete, select, table, update
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload,lazyload
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload, lazyload
 
 from .models import *
 from .schemas import *
@@ -43,7 +43,9 @@ async def add_item(db: AsyncSession, payload, Table: table):
         db.add(new_item)
         await db.commit()
     except SQLAlchemyError:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Item already exits")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Item already exits"
+        )
 
     await db.refresh(new_item)
     return new_item
@@ -68,13 +70,20 @@ async def get_all_teachers(db: AsyncSession, page: int, limit: int):
     result = await db.execute(query)
     return result.scalars().all()
 
-async def get_all_teacher_classes(db:AsyncSession, teacher_id:int):
+
+async def get_all_teacher_classes(db: AsyncSession, teacher_id: int):
     """Retruns teacher model with all classes"""
-    query = select(Teachers).options(joinedload(Teachers.classes)).filter(Teachers.id == teacher_id)
+    query = (
+        select(Teachers)
+        .options(joinedload(Teachers.classes))
+        .filter(Teachers.id == teacher_id)
+    )
     teacher_result = await db.execute(query)
     teacher = teacher_result.scalars().first()
     if teacher is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Teacher ID not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Teacher ID not found"
+        )
     return teacher.classes
 
 
@@ -148,9 +157,13 @@ async def add_new_reservation(db: AsyncSession, class_id: int, student_id: int):
     return class_object
 
 
-async def get_class_reservations(db:AsyncSession, class_id:int):
+async def get_class_reservations(db: AsyncSession, class_id: int):
     """Returns joinedload class object with all students"""
-    query = select(Classes).options(joinedload(Classes.students)).filter(Classes.id==class_id)
+    query = (
+        select(Classes)
+        .options(joinedload(Classes.students))
+        .filter(Classes.id == class_id)
+    )
     result = await db.execute(query)
     result_object = result.scalars().first()
     if result_object is None:
@@ -159,9 +172,16 @@ async def get_class_reservations(db:AsyncSession, class_id:int):
         )
     return result_object
 
-async def remove_student_from_reservations(db:AsyncSession, student_id:int, class_id:int):
+
+async def remove_student_from_reservations(
+    db: AsyncSession, student_id: int, class_id: int
+):
     """Remove student from linked class, returns 404 if student noti in class or if student/class ID not found"""
-    query = select(Classes).options(joinedload(Classes.students)).filter(Classes.id ==class_id)
+    query = (
+        select(Classes)
+        .options(joinedload(Classes.students))
+        .filter(Classes.id == class_id)
+    )
     result = await db.execute(query)
     class_object = result.scalars().first()
     if class_object is None:
@@ -177,15 +197,22 @@ async def remove_student_from_reservations(db:AsyncSession, student_id:int, clas
             status_code=status.HTTP_404_NOT_FOUND, detail="Student ID not found"
         )
     if student not in class_object.students:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not in the class")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Student not in the class"
+        )
     class_object.students.remove(student)
     await db.commit()
     await db.refresh(class_object)
     return class_object
 
+
 async def get_student_classes(db: AsyncSession, student_id: int):
     """Return all stundet classes"""
-    query = select(Students).options(joinedload(Students.classes)).filter(Students.id==student_id)
+    query = (
+        select(Students)
+        .options(joinedload(Students.classes))
+        .filter(Students.id == student_id)
+    )
     student_result = await db.execute(query)
     student = student_result.scalars().first()
 
@@ -196,18 +223,23 @@ async def get_student_classes(db: AsyncSession, student_id: int):
 
     return student.classes
 
-#invoices route
 
-async def get_all_invoices(db:AsyncSession,page:int,limit:int):
+# invoices route
+
+
+async def get_all_invoices(db: AsyncSession, page: int, limit: int):
     """Return all invoices,pagination via page and limit params"""
-    skip = (page-1)*limit
+    skip = (page - 1) * limit
     query = select(Invoices).offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
 
-async def get_invoice_student(db:AsyncSession, id:int):
+
+async def get_invoice_student(db: AsyncSession, id: int):
     """Preform joinedload and return student attribute of invoices"""
-    query = select(Invoices).options(joinedload(Invoices.student)).filter(Invoices.id==id)
+    query = (
+        select(Invoices).options(joinedload(Invoices.student)).filter(Invoices.id == id)
+    )
     result = await db.execute(query)
     invoice_rusult = result.scalars().first()
     if invoice_rusult is None:
