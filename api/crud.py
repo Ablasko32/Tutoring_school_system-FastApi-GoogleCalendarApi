@@ -195,3 +195,23 @@ async def get_student_classes(db: AsyncSession, student_id: int):
         )
 
     return student.classes
+
+#invoices route
+
+async def get_all_invoices(db:AsyncSession,page:int,limit:int):
+    """Return all invoices,pagination via page and limit params"""
+    skip = (page-1)*limit
+    query = select(Invoices).offset(skip).limit(limit)
+    result = await db.execute(query)
+    return result.scalars().all()
+
+async def get_invoice_student(db:AsyncSession, id:int):
+    """Preform joinedload and return student attribute of invoices"""
+    query = select(Invoices).options(joinedload(Invoices.student)).filter(Invoices.id==id)
+    result = await db.execute(query)
+    invoice_rusult = result.scalars().first()
+    if invoice_rusult is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invoice ID not found"
+        )
+    return invoice_rusult.student

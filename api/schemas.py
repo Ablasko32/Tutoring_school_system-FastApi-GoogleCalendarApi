@@ -89,6 +89,24 @@ class ClassData(ClassesBase):
 class ReservationResponse(ClassResponse):
     students: List[StudentResponse]
 
+class InvoicesBase(BaseModel):
+    student_id:int
+    invoice_date:date
+    description:str
+    payment_status:bool
+    amount:float
 
+class InvoiceData(InvoicesBase):
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "student_id": 1,
+                "invoice_date": "2024-05-01",
+                "description": "New invoice",
+                "payment_status": False,
+                "amount": 17.50
+            }
+        }
 
-
+class InvoiceResponse(InvoicesBase):
+    id:int
