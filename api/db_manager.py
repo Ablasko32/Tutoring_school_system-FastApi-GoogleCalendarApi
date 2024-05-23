@@ -10,7 +10,7 @@ DATABASE_URL = "sqlite+aiosqlite:///./database.db"
 Base = declarative_base()
 
 
-async_engine = create_async_engine(DATABASE_URL, echo="debug")
+async_engine = create_async_engine(DATABASE_URL, echo=True)
 AsyncSessionLocal = async_sessionmaker(bind=async_engine, expire_on_commit=False)
 
 

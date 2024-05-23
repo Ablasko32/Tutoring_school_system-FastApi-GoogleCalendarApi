@@ -1,11 +1,11 @@
 from fastapi import HTTPException, status
 from sqlalchemy import delete, select, table, update
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, lazyload
+from sqlalchemy.orm import joinedload
 
+from .logger import *
 from .models import *
-from .schemas import *
 
 
 async def delete_item(db: AsyncSession, id: int, Table: table):
@@ -42,13 +42,20 @@ async def add_item(db: AsyncSession, payload, Table: table):
     try:
         db.add(new_item)
         await db.commit()
-    except SQLAlchemyError:
+        await db.refresh(new_item)
+        return new_item
+    except IntegrityError as e:
+        await db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Item already exits"
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Item already exists: {e.orig}",
         )
-
-    await db.refresh(new_item)
-    return new_item
+    except SQLAlchemyError as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(e)}",
+        )
 
 
 # student router
