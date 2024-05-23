@@ -4,7 +4,7 @@ from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
 
-DATABASE_URL = "sqlite+aiosqlite:///./database.db"
+DATABASE_URL = "sqlite+aiosqlite:///./database_new.db"
 
 
 Base = declarative_base()

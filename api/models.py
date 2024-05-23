@@ -1,5 +1,5 @@
 from sqlalchemy import (Boolean, Column, Date, Float, ForeignKey, Integer,
-                        String, Text, Time)
+                        String, Text, Time,DateTime)
 from sqlalchemy.orm import relationship
 
 from .db_manager import Base
@@ -10,12 +10,12 @@ class Students(Base):
 
     __tablename__ = "students"
     id = Column(Integer, primary_key=True)
-    first_name = Column(String(150))
-    last_name = Column(String(150))
+    first_name = Column(String(150), nullable=False)
+    last_name = Column(String(150), nullable=False)
     email = Column(String(250), unique=True, nullable=False)
     phone_num = Column(String(100), nullable=False)
     parent_phone = Column(String(100))
-    birth_year = Column(Integer)
+    birth_year = Column(Integer, nullable=False)
 
     classes = relationship(
         "Classes", secondary="students_classes", back_populates="students", lazy=True
@@ -28,12 +28,12 @@ class Teachers(Base):
 
     __tablename__ = "teachers"
     id = Column(Integer, primary_key=True)
-    first_name = Column(String(150))
-    last_name = Column(String(150))
+    first_name = Column(String(150),nullable=False)
+    last_name = Column(String(150),nullable=False)
     email = Column(String(250), unique=True, nullable=False)
     phone_num = Column(String(100), nullable=False)
-    hourly = Column(Float)
-    hire_date = Column(Date)
+    hourly = Column(Float,nullable=False)
+    hire_date = Column(Date,nullable=False)
 
     classes = relationship("Classes", back_populates="teacher")
 
@@ -46,8 +46,8 @@ class Classes(Base):
     class_name = Column(String(100), nullable=False)
     teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=False)
     class_size = Column(Integer, nullable=False)
-    class_date = Column(Date, nullable=False)
-    class_hours = Column(Time, nullable=False)
+    class_start = Column(DateTime, nullable=False)
+    class_end = Column(DateTime, nullable=False)
 
     teacher = relationship("Teachers", back_populates="classes", uselist=False)
     students = relationship(
@@ -71,7 +71,7 @@ class Invoices(Base):
     __tablename__ = "invoices"
     id = Column(Integer, primary_key=True)
     student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
-    invoice_date = Column(Date)
+    invoice_date = Column(Date,nullable=False)
     description = Column(Text)
     payment_status = Column(Boolean, default=False)
     amount = Column(Float, nullable=False)

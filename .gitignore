@@ -1,3 +1,6 @@
 .idea
 database.db
 Logs
+api/creds.json
+api/token.json
+database_new.db

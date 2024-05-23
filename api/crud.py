@@ -6,7 +6,9 @@ from sqlalchemy.orm import joinedload
 
 from .logger import *
 from .models import *
+from .calendar_func import get_calendar_service,add_event_to_calendar
 
+service = get_calendar_service()
 
 async def delete_item(db: AsyncSession, id: int, Table: table):
     """Deletes student by student ID"""
@@ -104,13 +106,15 @@ async def get_all_classes(db: AsyncSession, page: int, limit: int):
 
 
 async def add_new_class(db: AsyncSession, class_data):
-    """Add new class to db,cant assign two classes on the same date/time, returns 409 conflict if tried"""
-    target_date = class_data.class_date
-    target_time = class_data.class_hours
+    """Add new class to db,cant assign two classes on the same datetime with same name, returns 409 conflict if tried"""
+    target_start = class_data.class_start
+    target_end = class_data.class_end
+    target_name = class_data.class_name
     query = (
         select(Classes)
-        .filter(Classes.class_date == target_date)
-        .filter(Classes.class_hours == target_time)
+        .filter(Classes.class_start == target_start)
+        .filter(Classes.class_end == target_end)
+        .filter(Classes.class_name==target_name)
     )
     result = await db.execute(query)
     rows = result.fetchall()
@@ -123,6 +127,7 @@ async def add_new_class(db: AsyncSession, class_data):
     db.add(new_class)
     await db.commit()
     await db.refresh(new_class)
+    add_event_to_calendar(service,target_name,target_start,target_end)
     return new_class
 
 

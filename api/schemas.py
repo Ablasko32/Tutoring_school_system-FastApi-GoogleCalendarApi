@@ -1,4 +1,5 @@
-from datetime import date, time
+import dataclasses
+from datetime import datetime,date,time
 from typing import List
 
 from pydantic import BaseModel
@@ -26,8 +27,8 @@ class ClassesBase(BaseModel):
     class_name: str
     teacher_id: int
     class_size: int
-    class_date: date
-    class_hours: time
+    class_start: datetime
+    class_end: datetime
 
 
 class StudentResponse(StudentBase):
@@ -80,8 +81,8 @@ class ClassData(ClassesBase):
                 "class_name": "Math",
                 "teacher_id": 1,
                 "class_size": 5,
-                "class_date": "2024-05-01",
-                "class_hours": "17:30",
+                "class_start": "2024-05-01T09:00:00",
+                "class_end": "2024-05-01T10:00:00",
             }
         }
 
