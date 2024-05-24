@@ -1,6 +1,8 @@
 .idea
 database.db
 Logs
-api/creds.json
-api/token.json
+api/Credentials/creds.json
+api/Credentials/token.json
+api/Credentials/service.json
 database_new.db
+requirements-dev.txt

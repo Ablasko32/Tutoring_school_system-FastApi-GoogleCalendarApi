@@ -29,6 +29,7 @@ class ClassesBase(BaseModel):
     class_size: int
     class_start: datetime
     class_end: datetime
+    description:str
 
 
 class StudentResponse(StudentBase):
@@ -55,6 +56,7 @@ class TeacherResponse(TeacherBase):
     id: int
 
 
+
 class TeacherData(TeacherBase):
 
     class Config:
@@ -72,6 +74,7 @@ class TeacherData(TeacherBase):
 
 class ClassResponse(ClassesBase):
     id: int
+    event_id: str
 
 
 class ClassData(ClassesBase):
@@ -83,6 +86,8 @@ class ClassData(ClassesBase):
                 "class_size": 5,
                 "class_start": "2024-05-01T09:00:00",
                 "class_end": "2024-05-01T10:00:00",
+                "description":"High school maths"
+
             }
         }
 

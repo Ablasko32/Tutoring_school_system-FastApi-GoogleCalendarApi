@@ -48,6 +48,8 @@ class Classes(Base):
     class_size = Column(Integer, nullable=False)
     class_start = Column(DateTime, nullable=False)
     class_end = Column(DateTime, nullable=False)
+    event_id = Column(String(150))
+    description = Column(Text)
 
     teacher = relationship("Teachers", back_populates="classes", uselist=False)
     students = relationship(

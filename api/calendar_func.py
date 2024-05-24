@@ -7,32 +7,31 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from .logger import api_logger
+from google.oauth2 import service_account
+
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
+CALENDAR_ID = "b0270e623ecc742a735ec9798a0b022aee0242f1780ff006005535220cf6ab88@group.calendar.google.com"
 
 def get_calendar_service():
-  """Shows basic usage of the Google Calendar API.
-  Prints the start and name of the next 10 events on the user's calendar.
-  """
+  """Returns a calendar service, needs creds.json, creates token.json"""
   creds = None
-  # The file token.json stores the user's access and refresh tokens, and is
-  # created automatically when the authorization flow completes for the first
-  # time.
-  if os.path.exists("token.json"):
-    creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-  # If there are no (valid) credentials available, let the user log in.
+  #Check to see if we have token.json
+  if os.path.exists(".api/Credentials/token.json"):
+    creds = Credentials.from_authorized_user_file("Credentials/token.json", SCOPES)
+  #if not token.json proceed with login from creds.json
   if not creds or not creds.valid:
     if creds and creds.expired and creds.refresh_token:
       creds.refresh(Request())
     else:
       flow = InstalledAppFlow.from_client_secrets_file(
-          "./api/creds.json", SCOPES
+          "./api/Credentials/creds.json", SCOPES
       )
       creds = flow.run_local_server(port=0)
-    # Save the credentials for the next run
-    with open("./api/token.json", "w") as token:
+    #Store credetials
+    with open("./api/Credentials/token.json", "w") as token:
       token.write(creds.to_json())
 
     try:
@@ -41,14 +40,25 @@ def get_calendar_service():
     except HttpError as e:
         api_logger.error("Error occured: %s",e)
 
+# def get_calendar_service():
+#     """Returns a calendar service using service account credentials."""
+#     try:
+#         credentials = service_account.Credentials.from_service_account_file(
+#             "./api/Credentials/service.json", scopes=SCOPES
+#         )
+#         service = build("calendar", "v3", credentials=credentials)
+#         return service
+#     except HttpError as e:
+#         api_logger.error("Error occurred: %s", e)
+#         return None
 
-def add_event_to_calendar(service, name, start_time, end_time):
-    """Adds new event to calendar, requires service to be set up first"""
+def add_event_to_calendar(service, name, start_time, end_time,description):
+    """Adds new event to calendar, requires service to be set up first, takes name,start_time,end_time,reccuerence"""
 
     event = {
         "summary":name,
         "location":"online",
-        "description":"description",
+        "description":description,
         "colorId":6,
         'start': {
             'dateTime': start_time.isoformat(),
@@ -59,17 +69,60 @@ def add_event_to_calendar(service, name, start_time, end_time):
             'timeZone': 'Europe/Belgrade'
         },
         "recurrence":[
-            "RRULE:FREQ=DAILY;COUNT=5"
+             "RRULE:FREQ=DAILY;COUNT=2"
+
         ],
         "attendees":[
-            {"email":"test@mail.com"}
+
         ]
 
 
 
     }
-
-    event = service.events().insert(calendarId="b0270e623ecc742a735ec9798a0b022aee0242f1780ff006005535220cf6ab88@group.calendar.google.com", body=event).execute()
+    try:
+        event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
+    except HttpError as e:
+        api_logger.error("Error with creating event: %s",e)
     api_logger.info("New event created, at event %s", event.get("htmlLink"))
+    return event
+
+def add_reservation_to_calendar(service,event_id,new_student_mail):
+    """Adds student email to atendees of event/makes a reservation"""
+
+    try:
+        target_event = service.events().get(calendarId=CALENDAR_ID, eventId=event_id).execute()
+        current_students = target_event.get("attendees", [])
+        new_student = {"email":new_student_mail}
+        if new_student not in current_students:
+            current_students.append(new_student)
+            target_event["attendees"] = current_students
+            updated_event = service.events().update(calendarId=CALENDAR_ID, eventId=event_id, body=target_event).execute()
+            api_logger.info("Updated event at %s", updated_event.get("htmlLink"))
+            return target_event
+        else:
+            api_logger.error("Student in attendees")
+    except HttpError as e:
+        api_logger.error("Error has occured: %s", e)
 
 
+def delete_reservation_from_calendar(service, event_id,target_student_mail):
+    """Removes student from atendees"""
+
+    try:
+        target_event = service.events().get(calendarId=CALENDAR_ID, eventId=event_id).execute()
+        current_attendees = target_event.get("attendees", [])
+
+        for student in current_attendees:
+            if student.get("email") == target_student_mail:
+                current_attendees.remove(student)
+                break
+        target_event["attendees"] = current_attendees
+        try:
+            updated_event = service.events().update(calendarId=CALENDAR_ID, eventId=event_id, body=target_event).execute()
+            api_logger.info("Updated event at %s", updated_event.get("htmlLink"))
+            return updated_event
+        except HttpError as e:
+            api_logger.error("Error has occured: %s", e)
+
+    except HttpError as e:
+        api_logger.error("Error has occured: %s", e)

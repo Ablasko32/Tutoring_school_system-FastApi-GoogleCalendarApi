@@ -14,15 +14,15 @@ MAX_LOG_SIZE_MB = 50
 
 # sqlalchemy logger
 db_logger = logging.getLogger("sqlalchemy.engine")
-db_logger.setLevel(logging.DEBUG)
+db_logger.setLevel(logging.INFO)
 
 # uvicorn logger
 uvicorn_logger = logging.getLogger("uvicorn.error")
-uvicorn_logger.setLevel(logging.DEBUG)
+uvicorn_logger.setLevel(logging.INFO)
 
 # custom logger
 api_logger = logging.getLogger(__name__)
-api_logger.setLevel(logging.DEBUG)
+api_logger.setLevel(logging.INFO)
 
 formater = logging.Formatter(fmt="%(asctime)s-%(name)s-%(levelname)s-%(message)s")
 
