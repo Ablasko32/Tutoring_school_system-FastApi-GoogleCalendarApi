@@ -52,8 +52,19 @@ def get_calendar_service():
 #         api_logger.error("Error occurred: %s", e)
 #         return None
 
-def add_event_to_calendar(service, name, start_time, end_time,description):
+def add_event_to_calendar(service, name, start_time, end_time,description,frequency):
     """Adds new event to calendar, requires service to be set up first, takes name,start_time,end_time,reccuerence"""
+
+    if len(frequency) !=0:
+        freq = frequency["freq"].upper()
+        by_day = frequency["by_day"]
+        weeks = frequency["weeks"]
+
+        recurrence_end_date = (start_time + datetime.timedelta(weeks=weeks-1,days=4)).strftime("%Y%m%dT%H%M%SZ")
+
+        RRULE = f"RRULE:FREQ={freq};BYDAY={by_day};UNTIL={recurrence_end_date}"
+    else:
+        RRULE = "RRULE:FREQ=DAILY;COUNT=1"
 
     event = {
         "summary":name,
@@ -69,7 +80,7 @@ def add_event_to_calendar(service, name, start_time, end_time,description):
             'timeZone': 'Europe/Belgrade'
         },
         "recurrence":[
-             "RRULE:FREQ=DAILY;COUNT=2"
+             RRULE
 
         ],
         "attendees":[
@@ -139,9 +150,18 @@ def delete_class_from_calendar(service, event_id):
     except HttpError as e:
         api_logger.error("Error has occured: %s", e)
 
-def update_event_calendar(service,event_id, name, description,start_time,end_time):
+def update_event_calendar(service,event_id, name, description,start_time,end_time, frequency):
     """Updates data for calendar event"""
+    if len(frequency) !=0:
+        freq = frequency["freq"].upper()
+        by_day = frequency["by_day"]
+        weeks = frequency["weeks"]
 
+        recurrence_end_date = (start_time + datetime.timedelta(weeks=weeks-1,days=4)).strftime("%Y%m%dT%H%M%SZ")
+
+        RRULE = f"RRULE:FREQ={freq};BYDAY={by_day};UNTIL={recurrence_end_date}"
+    else:
+        RRULE = "RRULE:FREQ=DAILY;COUNT=1"
     event = {
             "summary": name,
             "location": "online",
@@ -156,7 +176,7 @@ def update_event_calendar(service,event_id, name, description,start_time,end_tim
                 'timeZone': 'Europe/Belgrade'
             },
             "recurrence": [
-                "RRULE:FREQ=DAILY;COUNT=2"
+                RRULE
 
             ],
             "attendees": [

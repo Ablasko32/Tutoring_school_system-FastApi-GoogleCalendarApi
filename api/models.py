@@ -1,5 +1,5 @@
 from sqlalchemy import (Boolean, Column, Date, Float, ForeignKey, Integer,
-                        String, Text, Time,DateTime)
+                        String, Text, Time,DateTime, JSON)
 from sqlalchemy.orm import relationship
 
 from .db_manager import Base
@@ -50,6 +50,8 @@ class Classes(Base):
     class_end = Column(DateTime, nullable=False)
     event_id = Column(String(150))
     description = Column(Text)
+    frequency = Column(JSON)
+
 
     teacher = relationship("Teachers", back_populates="classes", uselist=False)
     students = relationship(

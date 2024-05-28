@@ -111,6 +111,7 @@ async def add_new_class(db: AsyncSession, class_data):
     target_end = class_data.class_end
     target_name = class_data.class_name
     target_description = class_data.description
+    target_frequency = class_data.frequency
     query = (
         select(Classes)
         .filter(Classes.class_start == target_start)
@@ -125,7 +126,7 @@ async def add_new_class(db: AsyncSession, class_data):
             detail="Conflict with date/time, class already exists",
         )
     #add event to calendar
-    calendar_event = add_event_to_calendar(service, target_name, target_start, target_end, target_description)
+    calendar_event = add_event_to_calendar(service, target_name, target_start, target_end, target_description, target_frequency)
     if not calendar_event:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create calendar event")
     calendar_id = calendar_event.get("id").strip()
@@ -184,9 +185,10 @@ async def update_class(db: AsyncSession, payload, id: int,):
     target_name = payload.class_name
     target_description = payload.description
     target_event_id = select_result.event_id
+    target_frequency = select_result.frequency
 
 
-    update_event_calendar(service,target_event_id,target_name,target_description,target_start,target_end)
+    update_event_calendar(service,target_event_id,target_name,target_description,target_start,target_end, target_frequency)
 
 
 

@@ -30,6 +30,7 @@ class ClassesBase(BaseModel):
     class_start: datetime
     class_end: datetime
     description:str
+    frequency:dict
 
 
 class StudentResponse(StudentBase):
@@ -86,7 +87,12 @@ class ClassData(ClassesBase):
                 "class_size": 5,
                 "class_start": "2024-05-01T09:00:00",
                 "class_end": "2024-05-01T10:00:00",
-                "description":"High school maths"
+                "description":"High school maths",
+                "frequency":{
+                    "freq":"weekly",
+                    "by_day":"MO,WE,FR",
+                    "weeks":2
+                }
 
             }
         }
