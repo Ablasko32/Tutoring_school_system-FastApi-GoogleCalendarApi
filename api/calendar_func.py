@@ -96,9 +96,12 @@ def add_reservation_to_calendar(service,event_id,new_student_mail):
         if new_student not in current_students:
             current_students.append(new_student)
             target_event["attendees"] = current_students
-            updated_event = service.events().update(calendarId=CALENDAR_ID, eventId=event_id, body=target_event).execute()
-            api_logger.info("Updated event at %s", updated_event.get("htmlLink"))
-            return target_event
+            try:
+                updated_event = service.events().update(calendarId=CALENDAR_ID, eventId=event_id, body=target_event).execute()
+                api_logger.info("Updated event at %s", updated_event.get("htmlLink"))
+                return target_event
+            except HttpError as e:
+                api_logger.error("Error has occured: %s", e)
         else:
             api_logger.error("Student in attendees")
     except HttpError as e:
@@ -126,3 +129,44 @@ def delete_reservation_from_calendar(service, event_id,target_student_mail):
 
     except HttpError as e:
         api_logger.error("Error has occured: %s", e)
+
+
+def delete_class_from_calendar(service, event_id):
+    """Delete class from calendar based on event id"""
+    try:
+        target_event = service.events().delete(calendarId=CALENDAR_ID, eventId=event_id).execute()
+        return target_event
+    except HttpError as e:
+        api_logger.error("Error has occured: %s", e)
+
+def update_event_calendar(service,event_id, name, description,start_time,end_time):
+    """Updates data for calendar event"""
+
+    event = {
+            "summary": name,
+            "location": "online",
+            "description": description,
+            "colorId": 6,
+            'start': {
+                'dateTime': start_time.isoformat(),
+                'timeZone': 'Europe/Belgrade',
+            },
+            'end': {
+                'dateTime': end_time.isoformat(),  # datetime.datetime(2024, 6, 30, 11, 0).isoformat()
+                'timeZone': 'Europe/Belgrade'
+            },
+            "recurrence": [
+                "RRULE:FREQ=DAILY;COUNT=2"
+
+            ],
+            "attendees": [
+
+            ]
+
+        }
+    try:
+        updated_event = service.events().update(calendarId=CALENDAR_ID, eventId=event_id,body=event).execute()
+    except HttpError as e:
+        api_logger.error("Error with creating event: %s", e)
+        api_logger.info("New event created, at event %s", event.get("htmlLink"))
+        return event

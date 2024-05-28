@@ -28,12 +28,12 @@ async def get_all_classes(
 
 
 @router.put("/update", status_code=status.HTTP_201_CREATED)
-async def update_class(db: db_dependancy, student: ClassData, id: int = Query(gt=0)):
+async def update_class(db: db_dependancy, class_data: ClassData, id: int = Query(gt=0)):
     """Update class model via ID, use ClassData schema"""
-    return await crud.update_item(db, student, id, Classes)
+    return await crud.update_class(db, class_data, id)
 
 
 @router.delete("/delete", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_class(db: db_dependancy, id: int = Query(gt=0)):
     """Delete class via ID"""
-    return await crud.delete_item(db, id, Classes)
+    return await crud.delete_class(db, id)

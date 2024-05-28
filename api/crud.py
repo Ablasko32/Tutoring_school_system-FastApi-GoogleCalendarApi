@@ -6,12 +6,12 @@ from sqlalchemy.orm import joinedload
 
 from .logger import *
 from .models import *
-from .calendar_func import get_calendar_service,add_event_to_calendar,add_reservation_to_calendar,delete_reservation_from_calendar
+from .calendar_func import get_calendar_service,add_event_to_calendar,add_reservation_to_calendar,delete_reservation_from_calendar,delete_class_from_calendar,update_event_calendar
 
 service = get_calendar_service()
 
 async def delete_item(db: AsyncSession, id: int, Table: table):
-    """Deletes student by student ID"""
+    """Deletes item by item ID"""
     query = delete(Table).where(Table.id == id)
     result = await db.execute(query)
     if result.rowcount == 0:
@@ -22,12 +22,12 @@ async def delete_item(db: AsyncSession, id: int, Table: table):
 
 
 async def update_item(db: AsyncSession, payload, id: int, Table: table):
-    """Filter students by ID, update by unpacking student object,return a 404 if ID not found"""
+    """Filter item by ID, update by unpacking item object,return a 404 if ID not found"""
     querry = select(Table).filter(Table.id == id)
     result = await db.execute(querry)
     if not result:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Student ID not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item ID not found"
         )
 
     update_query = (
@@ -128,8 +128,8 @@ async def add_new_class(db: AsyncSession, class_data):
     calendar_event = add_event_to_calendar(service, target_name, target_start, target_end, target_description)
     if not calendar_event:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create calendar event")
-    calendar_id = calendar_event.get("id")
-    api_logger.error(calendar_id)
+    calendar_id = calendar_event.get("id").strip()
+    api_logger.info("Calendar ID, %s", calendar_id)
 
     #add to database
     new_class = Classes(**class_data.dict(), event_id=calendar_id)
@@ -137,6 +137,64 @@ async def add_new_class(db: AsyncSession, class_data):
     await db.commit()
     await db.refresh(new_class)
     return new_class
+
+
+async def delete_class(db: AsyncSession, id: int):
+    """Deletes class by class ID"""
+
+    select_query = select(Classes).filter(Classes.id == id)
+    result = await db.execute(select_query)
+    event = result.scalars().first()
+
+    if event is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Class ID not found"
+        )
+
+    #delete event from calendar
+    delete_class_from_calendar(service, event.event_id)
+
+    #remove the class from db
+    delete_query = delete(Classes).where(Classes.id == id)
+    await db.execute(delete_query)
+    await db.commit()
+
+async def update_class(db: AsyncSession, payload, id: int,):
+    """Update class and class event in calendar """
+    querry = select(Classes).filter(Classes.id == id)
+    result = await db.execute(querry)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item ID not found"
+        )
+
+    update_query = (
+        update(Classes).where(Classes.id == id).values(**payload.dict(exclude_unset=True))
+    )
+
+    select_querry = (
+        select(Classes).where(Classes.id == id)
+    )
+
+    select_result = await db.execute(select_querry)
+    select_result = select_result.scalars().first()
+
+    target_start = payload.class_start
+    target_end = payload.class_end
+    target_name = payload.class_name
+    target_description = payload.description
+    target_event_id = select_result.event_id
+
+
+    update_event_calendar(service,target_event_id,target_name,target_description,target_start,target_end)
+
+
+
+    await db.execute(update_query)
+    await db.commit()
+    return {"message": "updated"}
+
+
 
 
 # reservations route
