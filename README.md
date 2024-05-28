@@ -9,7 +9,7 @@ system integrated with [Google Calendar API](https://developers.google.com/calen
 
 ___
 
-### Features:
+## Features:
 1. Keep track of students and teachers
     - Add, update and delete their data
 
@@ -26,15 +26,16 @@ ___
     - link student to new class, update Google calendar automaticaly
     - remove student from class
     - class size limit
+    - all atendees recive notifications via email/popup
 
 
 4. Keep tracks of invoices
     - organize invoices in one place
 
 ___
-### User guide:
+## User guide:
 
-### Get ready
+### Get ready:
 - First go to your [Google Calendar page ](https://calendar.google.com/)
 - Create new calendar, and copy calendar ID
 - in .env.example you have fields for configuring CALENDAR_ID and TIME_ZONE

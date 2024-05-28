@@ -32,7 +32,7 @@ os.makedirs(LOG_PATH, exist_ok=True)
 
 file_handler = RotatingFileHandler(
     os.path.join(LOG_PATH, LOG_NAME),
-    maxBytes=MAX_LOG_SIZE_MB * 1000,
+    maxBytes=MAX_LOG_SIZE_MB * 1000 * 1000,
     backupCount=MAX_BACKUPS,
 )
 file_handler.setFormatter(formater)

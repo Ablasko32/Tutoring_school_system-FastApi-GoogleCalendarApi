@@ -62,6 +62,11 @@ def get_calendar_service():
 def add_event_to_calendar(service, name, start_time, end_time, description, frequency):
     """Adds new event to calendar, requires service to be set up first, takes name,start_time,end_time,reccuerence"""
 
+    notifications = [
+        {"method": "popup", "minutes": 60},
+        {"method": "email", "minutes": 1440},
+    ]
+
     if len(frequency) != 0:
         freq = frequency["freq"].upper()
         by_day = frequency["by_day"]
@@ -91,6 +96,9 @@ def add_event_to_calendar(service, name, start_time, end_time, description, freq
         "recurrence": [RRULE],
         "attendees": [],
     }
+
+    event["reminders"] = {"useDefault": False, "overrides": notifications}
+
     try:
         event = service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
     except HttpError as e:
@@ -171,6 +179,11 @@ def update_event_calendar(
     service, event_id, name, description, start_time, end_time, frequency
 ):
     """Updates data for calendar event"""
+
+    notifications = [
+        {"method": "popup", "minutes": 60},
+        {"method": "email", "minutes": 1440},
+    ]
     if len(frequency) != 0:
         freq = frequency["freq"].upper()
         by_day = frequency["by_day"]
@@ -199,6 +212,8 @@ def update_event_calendar(
         "recurrence": [RRULE],
         "attendees": [],
     }
+    event["reminders"] = {"useDefault": False, "overrides": notifications}
+
     try:
         updated_event = (
             service.events()
