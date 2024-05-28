@@ -13,11 +13,14 @@ router = APIRouter(prefix="/reservations", tags=["Reservations"])
     "/add_new", status_code=status.HTTP_201_CREATED, response_model=ReservationResponse
 )
 async def add_reservation(
-    db: db_dependancy, class_id: int = Query(gt=0), student_id: int = Query(gt=0)
+    db: db_dependancy,
+    class_id: int = Query(gt=0),
+    student_id: int = Query(gt=0),
+    amount: float = Query(gt=0),
 ):
     """Add new class reservation, link student with classes, returns class with all students via
     ReservationResponse"""
-    return await crud.add_new_reservation(db, class_id, student_id)
+    return await crud.add_new_reservation(db, class_id, student_id, amount)
 
 
 @router.get(

@@ -1,3 +1,5 @@
+import datetime
+
 from fastapi import HTTPException, status
 from sqlalchemy import delete, select, table, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -222,7 +224,9 @@ async def update_class(
 
 
 # reservations route
-async def add_new_reservation(db: AsyncSession, class_id: int, student_id: int):
+async def add_new_reservation(
+    db: AsyncSession, class_id: int, student_id: int, amount: float
+):
     """Function to add new reservation to db.Takes class_id and student_id, checks class capacity, wont allow reservation if class is full,
     returns a class with all students"""
     query = (
@@ -260,6 +264,23 @@ async def add_new_reservation(db: AsyncSession, class_id: int, student_id: int):
     class_object.students.append(student)
     await db.commit()
     await db.refresh(class_object)
+
+    # new invoice creation
+
+    description = (
+        f"Reservation for: {class_object.class_name}, at {class_object.class_start},"
+        f" Class description: {class_object.description}"
+    )
+
+    new_invoice = Invoices(
+        student_id=student.id,
+        invoice_date=datetime.datetime.now(),
+        description=description,
+        amount=amount,
+    )
+
+    db.add(new_invoice)
+    await db.commit()
 
     return class_object
 

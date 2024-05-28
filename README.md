@@ -31,6 +31,7 @@ ___
 
 4. Keep tracks of invoices
     - organize invoices in one place
+    - auto create invoice when class is booked
 
 ___
 ## User guide:
