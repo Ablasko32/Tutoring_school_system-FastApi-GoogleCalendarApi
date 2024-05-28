@@ -61,7 +61,7 @@ uvicorn api.server:app --reload
 ```
 ___
 
-### Docs:
+### :page_with_curl: Docs:
 
 - Visit **localhost:8000/docs** for interactive Swagger docs
 
