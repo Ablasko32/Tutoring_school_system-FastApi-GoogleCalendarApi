@@ -39,7 +39,10 @@ ___
 - Create new calendar, and copy calendar ID
 - in .env.example you have fields for configuring CALENDAR_ID and TIME_ZONE
 - delete .example part so you are left with .env file containing your data
-
+- You need to create a [Google Cloud project](https://developers.google.com/calendar/api/quickstart/python) 
+   ,enable Calendar API and get OAuth credentials
+> Copy your OAuth json file contents to creds.json, remove .example extension
+>>Code will automatically create token.json in same folder to store session token
 ___
 ### Requirements:
 - Install requirements
