@@ -1,5 +1,5 @@
-from sqlalchemy import (Boolean, Column, Date, Float, ForeignKey, Integer,
-                        String, Text, Time,DateTime, JSON)
+from sqlalchemy import (JSON, Boolean, Column, Date, DateTime, Float,
+                        ForeignKey, Integer, String, Text, Time)
 from sqlalchemy.orm import relationship
 
 from .db_manager import Base
@@ -28,12 +28,12 @@ class Teachers(Base):
 
     __tablename__ = "teachers"
     id = Column(Integer, primary_key=True)
-    first_name = Column(String(150),nullable=False)
-    last_name = Column(String(150),nullable=False)
+    first_name = Column(String(150), nullable=False)
+    last_name = Column(String(150), nullable=False)
     email = Column(String(250), unique=True, nullable=False)
     phone_num = Column(String(100), nullable=False)
-    hourly = Column(Float,nullable=False)
-    hire_date = Column(Date,nullable=False)
+    hourly = Column(Float, nullable=False)
+    hire_date = Column(Date, nullable=False)
 
     classes = relationship("Classes", back_populates="teacher")
 
@@ -51,7 +51,6 @@ class Classes(Base):
     event_id = Column(String(150))
     description = Column(Text)
     frequency = Column(JSON)
-
 
     teacher = relationship("Teachers", back_populates="classes", uselist=False)
     students = relationship(
@@ -75,7 +74,7 @@ class Invoices(Base):
     __tablename__ = "invoices"
     id = Column(Integer, primary_key=True)
     student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
-    invoice_date = Column(Date,nullable=False)
+    invoice_date = Column(Date, nullable=False)
     description = Column(Text)
     payment_status = Column(Boolean, default=False)
     amount = Column(Float, nullable=False)

@@ -10,7 +10,6 @@ from .Routers import (classes_route, invoices_route, reservations_route,
 app = FastAPI(title="Pararel system")
 
 
-
 async def init_db():
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

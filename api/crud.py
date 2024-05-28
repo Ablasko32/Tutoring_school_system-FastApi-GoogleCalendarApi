@@ -4,11 +4,15 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
+from .calendar_func import (add_event_to_calendar, add_reservation_to_calendar,
+                            delete_class_from_calendar,
+                            delete_reservation_from_calendar,
+                            get_calendar_service, update_event_calendar)
 from .logger import *
 from .models import *
-from .calendar_func import get_calendar_service,add_event_to_calendar,add_reservation_to_calendar,delete_reservation_from_calendar,delete_class_from_calendar,update_event_calendar
 
 service = get_calendar_service()
+
 
 async def delete_item(db: AsyncSession, id: int, Table: table):
     """Deletes item by item ID"""
@@ -116,7 +120,7 @@ async def add_new_class(db: AsyncSession, class_data):
         select(Classes)
         .filter(Classes.class_start == target_start)
         .filter(Classes.class_end == target_end)
-        .filter(Classes.class_name==target_name)
+        .filter(Classes.class_name == target_name)
     )
     result = await db.execute(query)
     rows = result.fetchall()
@@ -125,14 +129,24 @@ async def add_new_class(db: AsyncSession, class_data):
             status_code=status.HTTP_409_CONFLICT,
             detail="Conflict with date/time, class already exists",
         )
-    #add event to calendar
-    calendar_event = add_event_to_calendar(service, target_name, target_start, target_end, target_description, target_frequency)
+    # add event to calendar
+    calendar_event = add_event_to_calendar(
+        service,
+        target_name,
+        target_start,
+        target_end,
+        target_description,
+        target_frequency,
+    )
     if not calendar_event:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create calendar event")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create calendar event",
+        )
     calendar_id = calendar_event.get("id").strip()
     api_logger.info("Calendar ID, %s", calendar_id)
 
-    #add to database
+    # add to database
     new_class = Classes(**class_data.dict(), event_id=calendar_id)
     db.add(new_class)
     await db.commit()
@@ -152,16 +166,21 @@ async def delete_class(db: AsyncSession, id: int):
             status_code=status.HTTP_404_NOT_FOUND, detail="Class ID not found"
         )
 
-    #delete event from calendar
+    # delete event from calendar
     delete_class_from_calendar(service, event.event_id)
 
-    #remove the class from db
+    # remove the class from db
     delete_query = delete(Classes).where(Classes.id == id)
     await db.execute(delete_query)
     await db.commit()
 
-async def update_class(db: AsyncSession, payload, id: int,):
-    """Update class and class event in calendar """
+
+async def update_class(
+    db: AsyncSession,
+    payload,
+    id: int,
+):
+    """Update class and class event in calendar"""
     querry = select(Classes).filter(Classes.id == id)
     result = await db.execute(querry)
     if not result:
@@ -170,12 +189,12 @@ async def update_class(db: AsyncSession, payload, id: int,):
         )
 
     update_query = (
-        update(Classes).where(Classes.id == id).values(**payload.dict(exclude_unset=True))
+        update(Classes)
+        .where(Classes.id == id)
+        .values(**payload.dict(exclude_unset=True))
     )
 
-    select_querry = (
-        select(Classes).where(Classes.id == id)
-    )
+    select_querry = select(Classes).where(Classes.id == id)
 
     select_result = await db.execute(select_querry)
     select_result = select_result.scalars().first()
@@ -187,16 +206,19 @@ async def update_class(db: AsyncSession, payload, id: int,):
     target_event_id = select_result.event_id
     target_frequency = select_result.frequency
 
-
-    update_event_calendar(service,target_event_id,target_name,target_description,target_start,target_end, target_frequency)
-
-
+    update_event_calendar(
+        service,
+        target_event_id,
+        target_name,
+        target_description,
+        target_start,
+        target_end,
+        target_frequency,
+    )
 
     await db.execute(update_query)
     await db.commit()
     return {"message": "updated"}
-
-
 
 
 # reservations route
@@ -229,10 +251,10 @@ async def add_new_reservation(db: AsyncSession, class_id: int, student_id: int):
             status_code=status.HTTP_404_NOT_FOUND, detail="Student ID not found"
         )
 
-    #update calendar event
+    # update calendar event
     student_email = student.email
     event_id = class_object.event_id
-    new_reservation = add_reservation_to_calendar(service,event_id,student_email)
+    new_reservation = add_reservation_to_calendar(service, event_id, student_email)
     api_logger.info("New reservation")
 
     class_object.students.append(student)
@@ -288,8 +310,9 @@ async def remove_student_from_reservations(
     class_object.students.remove(student)
 
     student_email = student.email
-    updated_class = delete_reservation_from_calendar(service, event_id=class_object.event_id, target_student_mail=student_email)
-
+    updated_class = delete_reservation_from_calendar(
+        service, event_id=class_object.event_id, target_student_mail=student_email
+    )
 
     await db.commit()
     await db.refresh(class_object)

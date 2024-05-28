@@ -1,5 +1,5 @@
 import dataclasses
-from datetime import datetime,date,time
+from datetime import date, datetime, time
 from typing import List
 
 from pydantic import BaseModel
@@ -29,8 +29,8 @@ class ClassesBase(BaseModel):
     class_size: int
     class_start: datetime
     class_end: datetime
-    description:str
-    frequency:dict
+    description: str
+    frequency: dict
 
 
 class StudentResponse(StudentBase):
@@ -55,7 +55,6 @@ class StudentData(StudentBase):
 
 class TeacherResponse(TeacherBase):
     id: int
-
 
 
 class TeacherData(TeacherBase):
@@ -87,13 +86,8 @@ class ClassData(ClassesBase):
                 "class_size": 5,
                 "class_start": "2024-05-01T09:00:00",
                 "class_end": "2024-05-01T10:00:00",
-                "description":"High school maths",
-                "frequency":{
-                    "freq":"weekly",
-                    "by_day":"MO,WE,FR",
-                    "weeks":2
-                }
-
+                "description": "High school maths",
+                "frequency": {"freq": "weekly", "by_day": "MO,WE,FR", "weeks": 2},
             }
         }
 

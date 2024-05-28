@@ -6,3 +6,4 @@ api/Credentials/token.json
 api/Credentials/service.json
 database_new.db
 requirements-dev.txt
+.env
