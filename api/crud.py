@@ -174,6 +174,17 @@ async def delete_class(db: AsyncSession, id: int):
     # remove the class from db
     delete_query = delete(Classes).where(Classes.id == id)
     await db.execute(delete_query)
+
+    # invoice deletion
+    invoice_querry = delete(Invoices).filter(Invoices.class_id == event.id)
+    result = await db.execute(invoice_querry)
+
+    # studentclass deletion
+    reservation_deletion_querry = delete(StudentsClasses).filter(
+        StudentsClasses.class_id == event.id
+    )
+    result = await db.execute(reservation_deletion_querry)
+
     await db.commit()
 
 
@@ -277,6 +288,7 @@ async def add_new_reservation(
         invoice_date=datetime.datetime.now(),
         description=description,
         amount=amount,
+        class_id=class_object.id,
     )
 
     db.add(new_invoice)
@@ -335,8 +347,21 @@ async def remove_student_from_reservations(
         service, event_id=class_object.event_id, target_student_mail=student_email
     )
 
+    # invoice deletion
+    invoice_querry = delete(Invoices).filter(Invoices.student_id == student.id)
+    result = await db.execute(invoice_querry)
+
+    # studentclass deletion
+    reservation_deletion_querry = (
+        delete(StudentsClasses)
+        .filter(StudentsClasses.student_id == student.id)
+        .filter(StudentsClasses.class_id == class_object.id)
+    )
+    result = await db.execute(reservation_deletion_querry)
+
     await db.commit()
     await db.refresh(class_object)
+
     return class_object
 
 

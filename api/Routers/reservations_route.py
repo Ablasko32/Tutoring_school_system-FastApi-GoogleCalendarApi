@@ -35,7 +35,7 @@ async def get_class_reservations(db: db_dependancy, class_id: int = Query(gt=0))
     status_code=status.HTTP_200_OK,
     response_model=ReservationResponse,
 )
-async def get_class_reservations(
+async def remove_student_from_reservations(
     db: db_dependancy, class_id: int = Query(gt=0), student_id: int = Query(gt=0)
 ):
     return await crud.remove_student_from_reservations(db, student_id, class_id)
@@ -44,5 +44,5 @@ async def get_class_reservations(
 @router.get(
     "/student", status_code=status.HTTP_200_OK, response_model=List[ClassResponse]
 )
-async def get_student_classes(db: db_dependancy, student_id: int = Query(gt=0)):
+async def get_student_reservations(db: db_dependancy, student_id: int = Query(gt=0)):
     return await crud.get_student_classes(db, student_id)

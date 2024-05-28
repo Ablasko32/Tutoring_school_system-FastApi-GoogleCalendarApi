@@ -102,6 +102,7 @@ class InvoicesBase(BaseModel):
     description: str
     payment_status: bool
     amount: float
+    class_id: int
 
 
 class InvoiceData(InvoicesBase):
@@ -113,6 +114,7 @@ class InvoiceData(InvoicesBase):
                 "description": "New invoice",
                 "payment_status": False,
                 "amount": 17.50,
+                "class_id": 1,
             }
         }
 

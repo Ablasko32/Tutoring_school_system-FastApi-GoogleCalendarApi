@@ -2,21 +2,20 @@
 ___
 
 This is  a project i built for learning purposes, it uses FastApi to create a  tutoring school backend
-system integrated with [Google Calendar API](https://developers.google.com/calendar/api/guides/overview) 
+system integrated with [Google Calendar API](https://developers.google.com/calendar/api/guides/overview)
 
-
-<img src="./github_images/calendar.PNG" width="600">
+<img src="./github_images/calendar.PNG" width="800">
 
 ___
 
-## Features:
+## :bulb: Features:
 1. Keep track of students and teachers
     - Add, update and delete their data
 
 
 2. Add new classes
     - each class is registered on Google calendar
-    - set size of class,,name,description, start and end times
+    - set size of class,name,description, start and end times
     - add atendees
     - set optional recurring frequency
     - delete and update events
@@ -34,7 +33,7 @@ ___
     - auto create invoice when class is booked
 
 ___
-## User guide:
+## :book: User guide:
 
 ### Get ready:
 - First go to your [Google Calendar page ](https://calendar.google.com/)
@@ -54,7 +53,7 @@ pip install -r ./requirements.txt
 ```
 ___
 
-### Run:
+### :rocket: Run:
 - Run simply with 
 
 ```bash
@@ -64,9 +63,10 @@ ___
 
 ### Docs:
 
-Visit **localhost:8000/docs** for interactive Swagger docs
+- Visit **localhost:8000/docs** for interactive Swagger docs
 
-<img src="./github_images/naslovna.PNG" width="600">
+<img src="./github_images/naslovna.PNG" width="600"> 
+
 
 ___
 > In development! :)

@@ -1,5 +1,4 @@
 .idea
-database.db
 Logs
 api/Credentials/creds.json
 api/Credentials/token.json

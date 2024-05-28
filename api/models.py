@@ -78,5 +78,6 @@ class Invoices(Base):
     description = Column(Text)
     payment_status = Column(Boolean, default=False)
     amount = Column(Float, nullable=False)
+    class_id = Column(Integer, ForeignKey("classes.id"))
 
     student = relationship("Students", back_populates="invoices", uselist=False)
