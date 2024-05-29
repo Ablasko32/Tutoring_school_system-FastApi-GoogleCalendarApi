@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from fastapi import HTTPException, status
 from sqlalchemy import delete, func, select, table, update
@@ -9,32 +10,10 @@ from sqlalchemy.orm import joinedload
 from .calendar_func import (add_event_to_calendar, add_reservation_to_calendar,
                             delete_class_from_calendar,
                             delete_reservation_from_calendar,
-                            get_calendar_service, update_event_calendar)
+                            update_event_calendar)
+from .calendar_service_manager import service_dependancy
 from .logger import *
 from .models import *
-import os
-
-service=None
-
-def build_service():
-    """Builds calendar service"""
-    global service
-    try:
-        service = get_calendar_service()
-        return {"message":"Logged in"}
-    except Exception as e:
-        api_logger.critical(e)
-        return {"error":e}
-
-def logout():
-    """Removes token.json and sets service to none, logging user out and requiring authorization again"""
-    global service
-    service=None
-    abs_path = os.path.abspath("api/Credentials/token.json")
-    os.remove(abs_path)
-    return {"message":"logged out"}
-
-
 
 
 async def delete_item(db: AsyncSession, id: int, Table: table):
@@ -177,11 +156,14 @@ async def get_all_classes(
     return result.scalars().all()
 
 
-async def add_new_class(db: AsyncSession, class_data):
+async def add_new_class(db: AsyncSession, class_data, manager: service_dependancy):
     """Add new class to db,cant assign two classes on the same datetime with same name, returns 409 conflict if tried,
     creates event on google calendar"""
+    service = manager.get_calendar_service()
     if service is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required"
+        )
     target_start = class_data.class_start
     target_end = class_data.class_end
     target_name = class_data.class_name
@@ -225,11 +207,13 @@ async def add_new_class(db: AsyncSession, class_data):
     return new_class
 
 
-async def delete_class(db: AsyncSession, id: int):
+async def delete_class(db: AsyncSession, id: int, manager: service_dependancy):
     """Deletes class by class ID, auto deletes calendar event, rises 404 if class ID not found, deletes linked invoices"""
-
+    service = manager.get_calendar_service()
     if service is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required"
+        )
     select_query = select(Classes).filter(Classes.id == id)
     result = await db.execute(select_query)
     event = result.scalars().first()
@@ -259,14 +243,13 @@ async def delete_class(db: AsyncSession, id: int):
     await db.commit()
 
 
-async def update_class(
-    db: AsyncSession,
-    payload,
-    id: int,
-):
+async def update_class(db: AsyncSession, payload, id: int, manager: service_dependancy):
     """Update class in database and class event in google calendar using ClassData schema, rises 404 if class ID not found"""
+    service = manager.get_calendar_service()
     if service is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required"
+        )
     querry = select(Classes).filter(Classes.id == id)
     result = await db.execute(querry)
     if not result:
@@ -309,13 +292,20 @@ async def update_class(
 
 # reservations route
 async def add_new_reservation(
-    db: AsyncSession, class_id: int, student_id: int, amount: float
+    db: AsyncSession,
+    class_id: int,
+    student_id: int,
+    amount: float,
+    manager: service_dependancy,
 ):
     """Function to add new reservation to db.Takes class_id and student_id, checks class capacity, wont allow reservation if class is full,
     returns a class with all students, registers student email to atendees to google calendar event, auto creates invoice
     """
+    service = manager.get_calendar_service()
     if service is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required"
+        )
     query = (
         select(Classes)
         .options(joinedload(Classes.students))
@@ -390,11 +380,14 @@ async def get_class_reservations(db: AsyncSession, class_id: int):
 
 
 async def remove_student_from_reservations(
-    db: AsyncSession, student_id: int, class_id: int
+    db: AsyncSession, student_id: int, class_id: int, manager: service_dependancy
 ):
     """Remove student from linked class, returns 404 if student not in class or if student/class ID not found,auto deletes linked invoice"""
+    service = manager.get_calendar_service()
     if service is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required"
+        )
     query = (
         select(Classes)
         .options(joinedload(Classes.students))

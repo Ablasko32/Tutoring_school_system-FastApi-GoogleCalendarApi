@@ -3,6 +3,7 @@ from typing import List
 from fastapi import APIRouter, Query, status
 
 from .. import crud
+from ..calendar_service_manager import service_dependancy
 from ..db_manager import db_dependancy
 from ..schemas import ClassResponse, ReservationResponse
 
@@ -14,13 +15,14 @@ router = APIRouter(prefix="/reservations", tags=["Reservations"])
 )
 async def add_reservation(
     db: db_dependancy,
+    manager: service_dependancy,
     class_id: int = Query(gt=0),
     student_id: int = Query(gt=0),
     amount: float = Query(gt=0),
 ):
     """Add new class reservation, link student with classes, returns class with all students via
     ReservationResponse"""
-    return await crud.add_new_reservation(db, class_id, student_id, amount)
+    return await crud.add_new_reservation(db, class_id, student_id, amount, manager)
 
 
 @router.get(
@@ -36,9 +38,14 @@ async def get_class_reservations(db: db_dependancy, class_id: int = Query(gt=0))
     response_model=ReservationResponse,
 )
 async def remove_student_from_reservations(
-    db: db_dependancy, class_id: int = Query(gt=0), student_id: int = Query(gt=0)
+    db: db_dependancy,
+    manager: service_dependancy,
+    class_id: int = Query(gt=0),
+    student_id: int = Query(gt=0),
 ):
-    return await crud.remove_student_from_reservations(db, student_id, class_id)
+    return await crud.remove_student_from_reservations(
+        db, student_id, class_id, manager
+    )
 
 
 @router.get(

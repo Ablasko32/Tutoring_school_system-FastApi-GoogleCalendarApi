@@ -1,15 +1,17 @@
-from fastapi import APIRouter,status
-from .. import crud
+from fastapi import APIRouter, status
 
-router = APIRouter(prefix="/auth", tags=["Authentification"])
+from ..calendar_service_manager import service_dependancy
+
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @router.get("/login", status_code=status.HTTP_200_OK)
-async def build_service():
+async def login(manager: service_dependancy):
     """Redirects to google consent screen, builds calendar service"""
-    return crud.build_service()
+    return manager.login()
+
 
 @router.get("/logout", status_code=status.HTTP_200_OK)
-async def logout():
-    """Logs user out, requires authetification to use google calendar api"""
-    return crud.logout()
+async def logout(manager: service_dependancy):
+    """Logout route, deletes token.json"""
+    return manager.logout()

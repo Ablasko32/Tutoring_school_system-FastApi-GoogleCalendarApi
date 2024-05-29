@@ -1,17 +1,19 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from .db_manager import async_engine
 from .logger import *
 from .models import *
-from .Routers import (classes_route, invoices_route, reservations_route,
-                      students_route, teachers_route, auth)
-from contextlib import asynccontextmanager
+from .Routers import (auth, classes_route, invoices_route, reservations_route,
+                      students_route, teachers_route)
 
 
 async def init_db():
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,7 +24,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Pararel system", lifespan=lifespan)
 
-#alternative older
+# alternative older
 # @app.on_event("startup")
 # async def on_startup():
 #     await init_db()

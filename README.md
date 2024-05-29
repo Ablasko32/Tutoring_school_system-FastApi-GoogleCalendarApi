@@ -11,7 +11,8 @@ ___
 ## :bulb: Features:
 
 1. **Log in**
-   - Login using google Oauth
+   - Login/logout using google Oauth
+
    
 
 2. **Keep track of students and teachers**
