@@ -22,10 +22,14 @@ async def add_new_invoice(db: db_dependancy, invoice: InvoiceData):
     "/all", status_code=status.HTTP_200_OK, response_model=List[InvoiceResponse]
 )
 async def get_all_invoices(
-    db: db_dependancy, page: int = Query(ge=1), limit: int = Query(10, gt=0)
+    db: db_dependancy,
+    payment_status: bool = None,
+    invoice_date=None,
+    page: int = Query(ge=1),
+    limit: int = Query(10, gt=0),
 ):
-    """Returns a list of invoices, pagination via page and limit parameters"""
-    return await crud.get_all_invoices(db, page, limit)
+    """Returns a list of invoices,filter by payment status, invoice date, pagination via page and limit parameters"""
+    return await crud.get_all_invoices(db, page, limit, payment_status, invoice_date)
 
 
 @router.put("/update", status_code=status.HTTP_201_CREATED)

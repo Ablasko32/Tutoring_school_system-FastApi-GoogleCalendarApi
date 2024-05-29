@@ -1,3 +1,4 @@
+from datetime import date
 from typing import List
 
 from fastapi import APIRouter, Query, status
@@ -21,10 +22,17 @@ async def add_new_class(db: db_dependancy, class_data: ClassData):
 
 @router.get("/all", status_code=status.HTTP_200_OK, response_model=List[ClassResponse])
 async def get_all_classes(
-    db: db_dependancy, page: int = Query(ge=1), limit: int = Query(10, gt=0)
+    db: db_dependancy,
+    class_name: str = None,
+    target_date=None,
+    description: str = None,
+    page: int = Query(ge=1),
+    limit: int = Query(10, gt=0),
 ):
-    """Returns a list of classes, pagination via page and limit parameters"""
-    return await crud.get_all_classes(db, page, limit)
+    """Returns a list of classes,filter by class name,target_date or description, pagination via page and limit parameters"""
+    return await crud.get_all_classes(
+        db, page, limit, class_name, target_date, description
+    )
 
 
 @router.put("/update", status_code=status.HTTP_201_CREATED)

@@ -23,10 +23,15 @@ async def add_new_class(db: db_dependancy, teacher: TeacherData):
     "/all", status_code=status.HTTP_200_OK, response_model=List[TeacherResponse]
 )
 async def get_all_teachers(
-    db: db_dependancy, page: int = Query(ge=1), limit: int = Query(10, gt=0)
+    db: db_dependancy,
+    last_name: str = None,
+    email: str = None,
+    phone_num: str = None,
+    page: int = Query(ge=1),
+    limit: int = Query(10, gt=0),
 ):
-    """Returns a list of teachers, pagination via page and limit parameters"""
-    return await crud.get_all_teachers(db, page, limit)
+    """Returns a list of teachers,filter by last name,email or phone number, pagination via page and limit parameters"""
+    return await crud.get_all_teachers(db, page, limit, last_name, email, phone_num)
 
 
 @router.put("/update", status_code=status.HTTP_201_CREATED)

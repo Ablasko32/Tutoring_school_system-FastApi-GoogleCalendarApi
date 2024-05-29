@@ -1,7 +1,7 @@
 import datetime
 
 from fastapi import HTTPException, status
-from sqlalchemy import delete, select, table, update
+from sqlalchemy import delete, func, select, table, update
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
@@ -17,7 +17,7 @@ service = get_calendar_service()
 
 
 async def delete_item(db: AsyncSession, id: int, Table: table):
-    """Deletes item by item ID"""
+    """Deletes item by item ID, raised 404 if item ID not found"""
     query = delete(Table).where(Table.id == id)
     result = await db.execute(query)
     if result.rowcount == 0:
@@ -45,7 +45,7 @@ async def update_item(db: AsyncSession, payload, id: int, Table: table):
 
 
 async def add_item(db: AsyncSession, payload, Table: table):
-    """Add new student by passing student data item, returns new student"""
+    """Add new student by passing student data item, returns new student, rises 409 if student exists"""
     new_item = Table(**payload.dict())
     try:
         db.add(new_item)
@@ -69,25 +69,55 @@ async def add_item(db: AsyncSession, payload, Table: table):
 # student router
 
 
-async def get_all_students(db: AsyncSession, page: int, limit: int):
-    """Skip is the amount of pages to skip, limit is the amount of entries per page"""
+async def get_all_students(
+    db: AsyncSession,
+    page: int,
+    limit: int,
+    last_name: str = None,
+    email: str = None,
+    phone_num: str = None,
+):
+    """Skip is the amount of pages to skip, limit is the amount of entries per page, filter by last name, email or phone number"""
     skip = (page - 1) * limit
-    query = select(Students).offset(skip).limit(limit)
+    base_query = select(Students)
+    if last_name:
+        base_query = base_query.filter(Students.last_name == last_name)
+    if email:
+        base_query = base_query.filter(Students.email == email)
+    if phone_num:
+        base_query = base_query.filter(Students.phone_num == phone_num)
+    query = base_query.offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
 
 
 # teachers router
-async def get_all_teachers(db: AsyncSession, page: int, limit: int):
-    """Skip is the amount of pages to skip, limit is the amount of entries per page"""
+async def get_all_teachers(
+    db: AsyncSession,
+    page: int,
+    limit: int,
+    last_name: str = None,
+    email: str = None,
+    phone_num: str = None,
+):
+    """Skip is the amount of pages to skip, limit is the amount of entries per page, filter by last name, email or phone number"""
     skip = (page - 1) * limit
-    query = select(Teachers).offset(skip).limit(limit)
+
+    base_query = select(Teachers)
+    if last_name:
+        base_query = base_query.filter(Teachers.last_name == last_name)
+    if email:
+        base_query = base_query.filter(Teachers.email == email)
+    if phone_num:
+        base_query = base_query.filter(Teachers.phone_num == phone_num)
+
+    query = base_query.offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
 
 
 async def get_all_teacher_classes(db: AsyncSession, teacher_id: int):
-    """Retruns teacher model with all classes"""
+    """Retruns teacher model with all classes, rises 404 if teacher ID not found"""
     query = (
         select(Teachers)
         .options(joinedload(Teachers.classes))
@@ -103,16 +133,32 @@ async def get_all_teacher_classes(db: AsyncSession, teacher_id: int):
 
 
 # classes router
-async def get_all_classes(db: AsyncSession, page: int, limit: int):
-    """Skip is the amount of pages to skip, limit is the amount of entries per page"""
+async def get_all_classes(
+    db: AsyncSession,
+    page: int,
+    limit: int,
+    class_name: str = None,
+    target_date=None,
+    description: str = None,
+):
+    """Skip is the amount of pages to skip, limit is the amount of entries per page, filter by class name,target date or description"""
     skip = (page - 1) * limit
-    query = select(Classes).offset(skip).limit(limit)
+    base_query = select(Classes)
+    if class_name:
+        base_query = base_query.filter(Classes.class_name.ilike(f"%{class_name}%"))
+    if target_date:
+        base_query = base_query.where(func.date(Classes.class_start) == target_date)
+    if description:
+        base_query = base_query.filter(Classes.description.ilike(f"%{description}%"))
+
+    query = base_query.offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
 
 
 async def add_new_class(db: AsyncSession, class_data):
-    """Add new class to db,cant assign two classes on the same datetime with same name, returns 409 conflict if tried"""
+    """Add new class to db,cant assign two classes on the same datetime with same name, returns 409 conflict if tried,
+    creates event on google calendar"""
     target_start = class_data.class_start
     target_end = class_data.class_end
     target_name = class_data.class_name
@@ -157,7 +203,7 @@ async def add_new_class(db: AsyncSession, class_data):
 
 
 async def delete_class(db: AsyncSession, id: int):
-    """Deletes class by class ID"""
+    """Deletes class by class ID, auto deletes calendar event, rises 404 if class ID not found, deletes linked invoices"""
 
     select_query = select(Classes).filter(Classes.id == id)
     result = await db.execute(select_query)
@@ -193,12 +239,12 @@ async def update_class(
     payload,
     id: int,
 ):
-    """Update class and class event in calendar"""
+    """Update class in database and class event in google calendar using ClassData schema, rises 404 if class ID not found"""
     querry = select(Classes).filter(Classes.id == id)
     result = await db.execute(querry)
     if not result:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Item ID not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Class ID not found"
         )
 
     update_query = (
@@ -239,7 +285,8 @@ async def add_new_reservation(
     db: AsyncSession, class_id: int, student_id: int, amount: float
 ):
     """Function to add new reservation to db.Takes class_id and student_id, checks class capacity, wont allow reservation if class is full,
-    returns a class with all students"""
+    returns a class with all students, registers student email to atendees to google calendar event, auto creates invoice
+    """
     query = (
         select(Classes)
         .options(joinedload(Classes.students))
@@ -298,7 +345,7 @@ async def add_new_reservation(
 
 
 async def get_class_reservations(db: AsyncSession, class_id: int):
-    """Returns joinedload class object with all students"""
+    """Returns joinedload class object with all students atteding class"""
     query = (
         select(Classes)
         .options(joinedload(Classes.students))
@@ -316,7 +363,7 @@ async def get_class_reservations(db: AsyncSession, class_id: int):
 async def remove_student_from_reservations(
     db: AsyncSession, student_id: int, class_id: int
 ):
-    """Remove student from linked class, returns 404 if student noti in class or if student/class ID not found"""
+    """Remove student from linked class, returns 404 if student not in class or if student/class ID not found,auto deletes linked invoice"""
     query = (
         select(Classes)
         .options(joinedload(Classes.students))
@@ -366,7 +413,7 @@ async def remove_student_from_reservations(
 
 
 async def get_student_classes(db: AsyncSession, student_id: int):
-    """Return all stundet classes"""
+    """Return all student classes"""
     query = (
         select(Students)
         .options(joinedload(Students.classes))
@@ -386,10 +433,23 @@ async def get_student_classes(db: AsyncSession, student_id: int):
 # invoices route
 
 
-async def get_all_invoices(db: AsyncSession, page: int, limit: int):
-    """Return all invoices,pagination via page and limit params"""
+async def get_all_invoices(
+    db: AsyncSession,
+    page: int,
+    limit: int,
+    payment_status: bool = None,
+    invoice_date=None,
+):
+    """Return all invoices,pagination via page and limit params, filter by payment status or invoice date"""
     skip = (page - 1) * limit
-    query = select(Invoices).offset(skip).limit(limit)
+
+    base_query = select(Invoices)
+    if payment_status:
+        base_query = base_query.filter(Invoices.payment_status == payment_status)
+    if invoice_date:
+        base_query = base_query.filter(Invoices.invoice_date == invoice_date)
+
+    query = base_query.offset(skip).limit(limit)
     result = await db.execute(query)
     return result.scalars().all()
 

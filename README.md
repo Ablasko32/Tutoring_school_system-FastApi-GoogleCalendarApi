@@ -1,4 +1,4 @@
-# TUTORING SCHOOL SYSTEM
+# :books: TUTORING SCHOOL SYSTEM
 ___
 
 This is  a project i built for learning purposes, it uses FastApi to create a  tutoring school backend
@@ -9,11 +9,13 @@ system integrated with [Google Calendar API](https://developers.google.com/calen
 ___
 
 ## :bulb: Features:
-1. Keep track of students and teachers
-    - Add, update and delete their data
+1. **Keep track of students and teachers**
+    - Add, update and delete student and teacher data
+    - filter students and teachers based on email, phone, or last name, pagination via page and limit
 
 
-2. Add new classes
+2. **Add new classes**
+    - filter classes based on name, date or description, pagination via page and limit 
     - each class is registered on Google calendar
     - set size of class,name,description, start and end times
     - add atendees
@@ -21,14 +23,16 @@ ___
     - delete and update events
 
 
-3. Student reservations
+3. **Student reservations**
     - link student to new class, update Google calendar automaticaly
     - remove student from class
     - class size limit
     - all atendees recive notifications via email/popup
 
 
-4. Keep tracks of invoices
+4. **Keep tracks of invoices**
+    - filter invoices by date of creation or payment status, pagination via page and limit
+    - get all invoices for student
     - organize invoices in one place
     - auto create invoice when class is booked
 
