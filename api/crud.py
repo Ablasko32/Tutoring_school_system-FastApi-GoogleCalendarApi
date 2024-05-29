@@ -12,8 +12,29 @@ from .calendar_func import (add_event_to_calendar, add_reservation_to_calendar,
                             get_calendar_service, update_event_calendar)
 from .logger import *
 from .models import *
+import os
 
-service = get_calendar_service()
+service=None
+
+def build_service():
+    """Builds calendar service"""
+    global service
+    try:
+        service = get_calendar_service()
+        return {"message":"Logged in"}
+    except Exception as e:
+        api_logger.critical(e)
+        return {"error":e}
+
+def logout():
+    """Removes token.json and sets service to none, logging user out and requiring authorization again"""
+    global service
+    service=None
+    abs_path = os.path.abspath("api/Credentials/token.json")
+    os.remove(abs_path)
+    return {"message":"logged out"}
+
+
 
 
 async def delete_item(db: AsyncSession, id: int, Table: table):
@@ -159,6 +180,8 @@ async def get_all_classes(
 async def add_new_class(db: AsyncSession, class_data):
     """Add new class to db,cant assign two classes on the same datetime with same name, returns 409 conflict if tried,
     creates event on google calendar"""
+    if service is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
     target_start = class_data.class_start
     target_end = class_data.class_end
     target_name = class_data.class_name
@@ -205,6 +228,8 @@ async def add_new_class(db: AsyncSession, class_data):
 async def delete_class(db: AsyncSession, id: int):
     """Deletes class by class ID, auto deletes calendar event, rises 404 if class ID not found, deletes linked invoices"""
 
+    if service is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
     select_query = select(Classes).filter(Classes.id == id)
     result = await db.execute(select_query)
     event = result.scalars().first()
@@ -240,6 +265,8 @@ async def update_class(
     id: int,
 ):
     """Update class in database and class event in google calendar using ClassData schema, rises 404 if class ID not found"""
+    if service is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
     querry = select(Classes).filter(Classes.id == id)
     result = await db.execute(querry)
     if not result:
@@ -287,6 +314,8 @@ async def add_new_reservation(
     """Function to add new reservation to db.Takes class_id and student_id, checks class capacity, wont allow reservation if class is full,
     returns a class with all students, registers student email to atendees to google calendar event, auto creates invoice
     """
+    if service is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
     query = (
         select(Classes)
         .options(joinedload(Classes.students))
@@ -364,6 +393,8 @@ async def remove_student_from_reservations(
     db: AsyncSession, student_id: int, class_id: int
 ):
     """Remove student from linked class, returns 404 if student not in class or if student/class ID not found,auto deletes linked invoice"""
+    if service is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Login required")
     query = (
         select(Classes)
         .options(joinedload(Classes.students))
