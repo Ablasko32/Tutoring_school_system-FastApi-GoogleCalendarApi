@@ -36,11 +36,16 @@ ___
     - all atendees recive notifications via email/popup
 
 
-5. **Keep tracks of invoices**
+5. **Keep tracks of student invoices**
     - filter invoices by date of creation or payment status, pagination via page and limit
     - get all invoices for student
     - organize invoices in one place
     - auto create invoice when class is booked
+
+
+6. **Keep track of teacher paychecks**
+   - auto generate paychecks for given date periods based on teacher classes schedule
+
 
 ___
 ## :book: User guide:
