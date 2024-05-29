@@ -6,6 +6,7 @@ from .. import crud
 from ..db_manager import db_dependancy
 from ..models import Teachers
 from ..schemas import ClassResponse, TeacherData, TeacherResponse
+from ..teacher_paycheck import calculate_paycheck
 
 router = APIRouter(prefix="/teachers", tags=["Teachers"])
 
@@ -54,3 +55,10 @@ async def delete_student(db: db_dependancy, id: int = Query(gt=0)):
 async def get_teacher_classes(db: db_dependancy, teacher_id: int = Query(gt=0)):
     """Returns teacher model with loaded classes using ClassResponse schema"""
     return await crud.get_all_teacher_classes(db, teacher_id)
+
+@router.get(
+    "/paycheck", status_code=status.HTTP_200_OK
+)
+async def get_paycheck(db: db_dependancy, teacher_id: int = Query(gt=0), start_date=None,end_date=None):
+    """Calculates teacher paycheck for given date period"""
+    return await calculate_paycheck(db, teacher_id,start_date,end_date)
