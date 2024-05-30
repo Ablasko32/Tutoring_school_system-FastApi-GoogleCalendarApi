@@ -10,7 +10,7 @@ from sqlalchemy.orm import joinedload
 from .calendar_func import (add_event_to_calendar, add_reservation_to_calendar,
                             delete_class_from_calendar,
                             delete_reservation_from_calendar,
-                            update_event_calendar)
+                            update_event_calendar,counting_instance_of_event)
 from .calendar_service_manager import service_dependancy
 from .logger import *
 from .models import *
@@ -199,8 +199,12 @@ async def add_new_class(db: AsyncSession, class_data, manager: service_dependanc
     calendar_id = calendar_event.get("id").strip()
     api_logger.info("Calendar ID, %s", calendar_id)
 
+    #get number of calendar event instances
+    class_number_instances = counting_instance_of_event(service,calendar_id)
+
+
     # add to database
-    new_class = Classes(**class_data.dict(), event_id=calendar_id)
+    new_class = Classes(**class_data.dict(), event_id=calendar_id,classes_number=class_number_instances )
     db.add(new_class)
     await db.commit()
     await db.refresh(new_class)

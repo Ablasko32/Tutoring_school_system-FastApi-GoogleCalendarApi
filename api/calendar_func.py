@@ -20,6 +20,23 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 CALENDAR_ID = os.getenv("CALENDAR_ID")
 
 
+
+
+def counting_instance_of_event(service,event_id):
+    """Counts instances of reccuring event, returns number"""
+    page_token = None
+    summary = []
+    while True:
+        events = service.events().instances(calendarId=CALENDAR_ID, eventId=event_id,
+                                            pageToken=page_token).execute()
+        for event in events['items']:
+            summary.append(event["summary"])
+        page_token = events.get('nextPageToken')
+        if not page_token:
+            break
+    return len(summary)
+
+
 def get_calendar_service():
     """Returns a calendar service, needs creds.json, creates token.json"""
     creds = None

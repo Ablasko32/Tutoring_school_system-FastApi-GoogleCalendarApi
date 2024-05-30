@@ -54,6 +54,7 @@ class Classes(Base):
     event_id = Column(String(150))
     description = Column(Text)
     frequency = Column(JSON)
+    classes_number=Column(Integer)
 
     teacher = relationship("Teachers", back_populates="classes", uselist=False)
     students = relationship(
