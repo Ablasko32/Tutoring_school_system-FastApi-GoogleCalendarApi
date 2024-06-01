@@ -39,6 +39,7 @@ class Teachers(Base):
 
     classes = relationship("Classes", back_populates="teacher")
     work_hours = relationship("TeacherHours", back_populates="teacher")
+    paychecks = relationship("Paychecks", back_populates="teacher")
 
 
 class Classes(Base):
@@ -96,3 +97,23 @@ class TeacherHours(Base):
     date = Column(Date, default=datetime.datetime.today().date(), nullable=False)
 
     teacher = relationship("Teachers", back_populates="work_hours", uselist=False)
+
+
+class Paychecks(Base):
+    """Stores geneerated paychecks for teachers"""
+
+    __tablename__ = "paychecks"
+    id = Column(Integer, primary_key=True)
+    teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=False)
+    amount = Column(Float, nullable=False)
+    work_hours = Column(Float, nullable=False)
+    school_hours = Column(Float, nullable=False)
+    hourly = Column(Float, nullable=False)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
+    creation_date = Column(
+        Date, default=datetime.datetime.today().date(), nullable=False
+    )
+    payment_status = Column(Boolean, default=False, nullable=False)
+
+    teacher = relationship("Teachers", back_populates="paychecks", uselist=False)

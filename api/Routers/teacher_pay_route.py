@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query, status
 from .. import crud
 from ..db_manager import db_dependancy
 from ..models import TeacherHours
-from ..schemas import TeacherHoursData, TeacherHoursResponse
+from ..schemas import PaycheckResponse, TeacherHoursData, TeacherHoursResponse
 
 router = APIRouter(prefix="/paycheck", tags=["Teacher paycheck"])
 
@@ -44,3 +44,16 @@ async def get_work_hours(
 async def delete_work_hours(db: db_dependancy, id: int = Query(gt=0)):
     """Deletes work hour entry based on ID"""
     return await crud.delete_item(db, id, TeacherHours)
+
+
+@router.post(
+    "/generate_paycheck",
+    status_code=status.HTTP_201_CREATED,
+    response_model=PaycheckResponse,
+)
+async def generate_paycheck(
+    db: db_dependancy, start_date: date, end_date: date, teacher_id: int = Query(gt=0)
+):
+    """Generates paycheck for target date period"""
+
+    return await crud.generate_paycheck(db, start_date, end_date, teacher_id)

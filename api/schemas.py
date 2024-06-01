@@ -138,3 +138,19 @@ class TeacherHoursData(TeacherHoursBase):
 
 class TeacherHoursResponse(TeacherHoursBase):
     id: int
+
+
+class PaycheckBase(BaseModel):
+    teacher_id: int
+    amount: float
+    work_hours: float
+    school_hours: float
+    hourly: float
+    start_date: date
+    end_date: date
+    creation_date: date
+    payment_status: bool
+
+
+class PaycheckResponse(PaycheckBase):
+    id: int

@@ -554,3 +554,64 @@ async def get_work_hours(
             detail="Target hours for date range and teacher id not found",
         )
     return hours_list
+
+
+async def generate_paycheck(
+    db: AsyncSession, start_date: date, end_date: date, teacher_id: int
+):
+    """Generates paycheck for teacher for given date range and saves it to table paychecks, counts school hours(45 mins)"""
+
+    teacher_query = select(Teachers).filter(Teachers.id == teacher_id)
+    teacher_result = await db.execute(teacher_query)
+
+    target_teacher = teacher_result.scalars().first()
+
+    query = (
+        select(TeacherHours)
+        .filter(TeacherHours.teacher_id == teacher_id)
+        .filter(TeacherHours.date.between(start_date, end_date))
+    )
+    result = await db.execute(query)
+    hours_list = result.scalars().all()
+    if not hours_list:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target hours for date range and teacher id not found",
+        )
+
+    hourly = target_teacher.hourly
+
+    work_hours = 0
+    for hour in hours_list:
+        work_hours += hour.hours
+
+    school_hours = round(work_hours * 60 / 45, 2)
+    payment_amount = round(school_hours * hourly, 2)
+
+    check_exist_paycheck_query = (
+        select(Paychecks)
+        .filter(Paychecks.teacher_id == teacher_id)
+        .filter(Paychecks.start_date == start_date)
+        .filter(Paychecks.end_date == end_date)
+    )
+    result = await db.execute(check_exist_paycheck_query)
+    existing_paycheck = result.scalars().first()
+    if existing_paycheck:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Paycheck for that period already exists",
+        )
+
+    new_paycheck = Paychecks(
+        teacher_id=teacher_id,
+        amount=payment_amount,
+        school_hours=school_hours,
+        work_hours=work_hours,
+        hourly=hourly,
+        start_date=start_date,
+        end_date=end_date,
+    )
+    db.add(new_paycheck)
+    await db.commit()
+    await db.refresh(new_paycheck)
+    return new_paycheck
