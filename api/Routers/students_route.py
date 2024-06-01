@@ -18,7 +18,10 @@ async def add_new_student(db: db_dependancy, student: StudentData):
     returns student model"""
     return await crud.add_item(db, student, Students)
 
-@router.get("/all", status_code=status.HTTP_200_OK,response_model=List[StudentResponse])
+
+@router.get(
+    "/all", status_code=status.HTTP_200_OK, response_model=List[StudentResponse]
+)
 async def get_all_students(
     db: db_dependancy,
     last_name: str = None,

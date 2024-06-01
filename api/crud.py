@@ -1,5 +1,6 @@
 import datetime
 import os
+from datetime import date
 
 from fastapi import HTTPException, status
 from sqlalchemy import delete, func, select, table, update
@@ -490,3 +491,66 @@ async def get_invoice_student(db: AsyncSession, id: int):
             status_code=status.HTTP_404_NOT_FOUND, detail="Invoice ID not found"
         )
     return invoice_rusult.student
+
+
+# teachers pay route
+
+
+async def add_work_hours(db: AsyncSession, teacher_data):
+    """Add work hours to TeacherHours models, cant enter twice for same date, same teacher same hours"""
+    # query to see if hours are added for teacher ,date
+    query = (
+        select(TeacherHours)
+        .filter(TeacherHours.teacher_id == teacher_data.teacher_id)
+        .filter(TeacherHours.date == teacher_data.date)
+        .filter(TeacherHours.hours == teacher_data.hours)
+    )
+    result = await db.execute(query)
+    target_hours = result.scalars().first()
+    if target_hours:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Hours already loged for that teacher on that date",
+        )
+
+    new_work_day_hours = TeacherHours(**teacher_data.dict())
+    db.add(new_work_day_hours)
+    try:
+        await db.commit()
+        await db.refresh(new_work_day_hours)
+        return new_work_day_hours
+    except SQLAlchemyError as e:
+        api_logger.critical(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An database error has occured",
+        )
+
+
+async def get_work_hours(
+    db: AsyncSession,
+    teacher_id: int,
+    start_date: date,
+    end_date: date,
+    page: int,
+    limit: int,
+):
+    """Returns a list of teacher work hours for specified date range, pagination via page and limit querry params"""
+
+    skip = (page - 1) * limit
+
+    query = (
+        select(TeacherHours)
+        .filter(TeacherHours.teacher_id == teacher_id)
+        .filter(TeacherHours.date.between(start_date, end_date))
+        .offset(skip)
+        .limit(limit)
+    )
+    result = await db.execute(query)
+    hours_list = result.scalars().all()
+    if not hours_list:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Target hours for date range and teacher id not found",
+        )
+    return hours_list

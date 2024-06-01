@@ -7,7 +7,7 @@ from .db_manager import async_engine
 from .logger import *
 from .models import *
 from .Routers import (auth, classes_route, invoices_route, reservations_route,
-                      students_route, teachers_route)
+                      students_route, teacher_pay_route, teachers_route)
 
 
 async def init_db():
@@ -40,3 +40,4 @@ app.include_router(teachers_route.router)
 app.include_router(classes_route.router)
 app.include_router(reservations_route.router)
 app.include_router(invoices_route.router)
+app.include_router(teacher_pay_route.router)

@@ -121,3 +121,20 @@ class InvoiceData(InvoicesBase):
 
 class InvoiceResponse(InvoicesBase):
     id: int
+
+
+class TeacherHoursBase(BaseModel):
+    teacher_id: int
+    hours: float
+    date: date
+
+
+class TeacherHoursData(TeacherHoursBase):
+    class Config:
+        json_schema_extra = {
+            "example": {"teacher_id": 1, "hours": 5, "date": "2024-05-01"}
+        }
+
+
+class TeacherHoursResponse(TeacherHoursBase):
+    id: int

@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy import (JSON, Boolean, Column, Date, DateTime, Float,
                         ForeignKey, Integer, String, Text, Time)
 from sqlalchemy.orm import relationship
@@ -36,6 +38,7 @@ class Teachers(Base):
     hire_date = Column(Date, nullable=False)
 
     classes = relationship("Classes", back_populates="teacher")
+    work_hours = relationship("TeacherHours", back_populates="teacher")
 
 
 class Classes(Base):
@@ -81,3 +84,15 @@ class Invoices(Base):
     class_id = Column(Integer, ForeignKey("classes.id"))
 
     student = relationship("Students", back_populates="invoices", uselist=False)
+
+
+class TeacherHours(Base):
+    """Keeps track of teacher work hours"""
+
+    __tablename__ = "teacher_hours"
+    id = Column(Integer, primary_key=True)
+    teacher_id = Column(Integer, ForeignKey("teachers.id"), nullable=False)
+    hours = Column(Float, nullable=False)
+    date = Column(Date, default=datetime.datetime.today().date(), nullable=False)
+
+    teacher = relationship("Teachers", back_populates="work_hours", uselist=False)
