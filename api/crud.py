@@ -531,10 +531,9 @@ async def get_work_hours(
     db: AsyncSession,
     page: int,
     limit: int,
-    teacher_id: int=None,
-    start_date: date=None,
-    end_date: date=None,
-
+    teacher_id: int = None,
+    start_date: date = None,
+    end_date: date = None,
 ):
     """Returns a list of teacher work hours filter by teacher id , and combination of start and end times, paginated via page and limit query params"""
 
@@ -618,33 +617,48 @@ async def generate_paycheck(
     return new_paycheck
 
 
-async def get_all_paychecks(db:AsyncSession,page:int, limit:int, teacher_id:int=None,is_payed:bool=None,start_date:date=None,end_date:date=None):
+async def get_all_paychecks(
+    db: AsyncSession,
+    page: int,
+    limit: int,
+    teacher_id: int = None,
+    is_payed: bool = None,
+    start_date: date = None,
+    end_date: date = None,
+):
     """Returns all paychecks for, paginated via page and limit query params, filter by teacher id , payment status, and combination of start and end date"""
     skip = (page - 1) * limit
     base_query = select(Paychecks)
     if teacher_id:
-        base_query = base_query.filter(Paychecks.teacher_id==teacher_id)
+        base_query = base_query.filter(Paychecks.teacher_id == teacher_id)
     if is_payed is not None:
-        base_query = base_query.filter(Paychecks.payment_status==is_payed)
+        base_query = base_query.filter(Paychecks.payment_status == is_payed)
     if start_date and end_date:
-        base_query = base_query.filter(Paychecks.start_date>=start_date).filter(Paychecks.end_date<=end_date)
+        base_query = base_query.filter(Paychecks.start_date >= start_date).filter(
+            Paychecks.end_date <= end_date
+        )
     query = base_query.offset(skip).limit(limit)
 
     results = await db.execute(query)
     all_paychecks = results.scalars().all()
     if not all_paychecks:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paychecks not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Paychecks not found"
+        )
     return all_paychecks
 
-async def pay_paycheck(db:AsyncSession, paycheck_id:int):
+
+async def pay_paycheck(db: AsyncSession, paycheck_id: int):
     """Pay paycheck, change payment status of Paycheck model to true"""
-    query = select(Paychecks).filter(Paychecks.id==paycheck_id)
+    query = select(Paychecks).filter(Paychecks.id == paycheck_id)
     result = await db.execute(query)
     target_paycheck = result.scalars().first()
     if not target_paycheck:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Paycheck ID not found")
-    target_paycheck.payment_status=True
-    target_paycheck.payment_date=datetime.datetime.today().date()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Paycheck ID not found"
+        )
+    target_paycheck.payment_status = True
+    target_paycheck.payment_date = datetime.datetime.today().date()
     await db.commit()
     await db.refresh(target_paycheck)
     return target_paycheck

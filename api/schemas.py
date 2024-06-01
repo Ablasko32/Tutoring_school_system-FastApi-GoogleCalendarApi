@@ -154,4 +154,4 @@ class PaycheckBase(BaseModel):
 
 class PaycheckResponse(PaycheckBase):
     id: int
-    payment_date:date
+    payment_date: date
