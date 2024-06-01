@@ -115,5 +115,6 @@ class Paychecks(Base):
         Date, default=datetime.datetime.today().date(), nullable=False
     )
     payment_status = Column(Boolean, default=False, nullable=False)
+    payment_date = Column(Date)
 
     teacher = relationship("Teachers", back_populates="paychecks", uselist=False)
