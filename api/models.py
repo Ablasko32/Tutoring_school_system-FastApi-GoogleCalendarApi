@@ -35,7 +35,7 @@ class Teachers(Base):
     email = Column(String(250), unique=True, nullable=False)
     phone_num = Column(String(100), nullable=False)
     hourly = Column(Float, nullable=False)
-    hire_date = Column(Date, nullable=False)
+    hire_date = Column(Date, nullable=False, default=datetime.datetime.now().date())
 
     classes = relationship("Classes", back_populates="teacher")
     work_hours = relationship("TeacherHours", back_populates="teacher")

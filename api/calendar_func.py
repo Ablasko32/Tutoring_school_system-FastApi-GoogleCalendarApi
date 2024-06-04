@@ -20,30 +20,30 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 CALENDAR_ID = os.getenv("CALENDAR_ID")
 
 
-def get_calendar_service():
-    """Returns a calendar service, needs creds.json, creates token.json"""
-    creds = None
-    # Check to see if we have token.json
-    if os.path.exists(".api/Credentials/token.json"):
-        creds = Credentials.from_authorized_user_file("Credentials/token.json", SCOPES)
-    # if not token.json proceed with login from creds.json
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "./api/Credentials/creds.json", SCOPES
-            )
-            creds = flow.run_local_server(port=0)
-        # Store credetials
-        with open("./api/Credentials/token.json", "w") as token:
-            token.write(creds.to_json())
-
-        try:
-            service = build("calendar", "v3", credentials=creds)
-            return service
-        except HttpError as e:
-            api_logger.error("Error occured: %s", e)
+# def get_calendar_service():
+#     """Returns a calendar service, needs creds.json, creates token.json"""
+#     creds = None
+#     # Check to see if we have token.json
+#     if os.path.exists(".api/Credentials/token.json"):
+#         creds = Credentials.from_authorized_user_file("Credentials/token.json", SCOPES)
+#     # if not token.json proceed with login from creds.json
+#     if not creds or not creds.valid:
+#         if creds and creds.expired and creds.refresh_token:
+#             creds.refresh(Request())
+#         else:
+#             flow = InstalledAppFlow.from_client_secrets_file(
+#                 "./api/Credentials/creds.json", SCOPES
+#             )
+#             creds = flow.run_local_server(port=0)
+#         # Store credetials
+#         with open("./api/Credentials/token.json", "w") as token:
+#             token.write(creds.to_json())
+#
+#         try:
+#             service = build("calendar", "v3", credentials=creds)
+#             return service
+#         except HttpError as e:
+#             api_logger.error("Error occured: %s", e)
 
 
 # def get_calendar_service():
@@ -67,10 +67,10 @@ def add_event_to_calendar(service, name, start_time, end_time, description, freq
         {"method": "email", "minutes": 1440},
     ]
 
-    if len(frequency) != 0:
-        freq = frequency["freq"].upper()
-        by_day = frequency["by_day"]
-        weeks = frequency["weeks"]
+    if frequency:
+        freq = frequency.freq.upper()
+        by_day = frequency.by_day
+        weeks = frequency.weeks
 
         recurrence_end_date = (
             start_time + datetime.timedelta(weeks=weeks - 1, days=4)
@@ -184,10 +184,10 @@ def update_event_calendar(
         {"method": "popup", "minutes": 60},
         {"method": "email", "minutes": 1440},
     ]
-    if len(frequency) != 0:
-        freq = frequency["freq"].upper()
-        by_day = frequency["by_day"]
-        weeks = frequency["weeks"]
+    if frequency:
+        freq = frequency.freq.upper()
+        by_day = frequency.by_day
+        weeks = frequency.weeks
 
         recurrence_end_date = (
             start_time + datetime.timedelta(weeks=weeks - 1, days=4)
