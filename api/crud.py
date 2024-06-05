@@ -492,6 +492,18 @@ async def get_invoice_student(db: AsyncSession, id: int):
         )
     return invoice_rusult.student
 
+async def pay_invoice(db:AsyncSession, id:int):
+    """Pay student invoice"""
+    query = select(Invoices).filter(Invoices.id==id)
+    result = await db.execute(query)
+    target_invoice = result.scalars().first()
+    if not target_invoice:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice ID not found")
+    target_invoice.payment_status=True
+    await db.commit()
+    await db.refresh(target_invoice)
+    return target_invoice
+
 
 # teachers pay route
 

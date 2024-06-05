@@ -1,10 +1,15 @@
 # :books: TUTORING SCHOOL SYSTEM
 ___
 
-This is  a project i built for learning purposes, it uses FastApi to create a  tutoring school backend
-system integrated with [Google Calendar API](https://developers.google.com/calendar/api/guides/overview)
+This is  a project i built for learning purposes, it uses **FastApi** to create a  tutoring school backend
+system integrated with [Google Calendar API](https://developers.google.com/calendar/api/guides/overview).
 
-<img src="./github_images/calendar.PNG" width="800">
+Main idea is to create a ERP system to make it easier to manage tutoring school needs.
+Api is built on FastApi with Pydantic models for json serialization, async Sqlalchemy orm for database interaction,
+
+and Docker for easy deployment. 
+
+<img src="./github_images/calendar_snip.PNG" width="800">
 
 ___
 
@@ -62,28 +67,39 @@ ___
    ,enable Calendar API and get OAuth credentials
 > Copy your OAuth json file contents to creds.json, remove .example extension
 >>Code will automatically create token.json in same folder to store session token
-___
-### Requirements:
-- Install requirements
 
-```bsh
-pip install -r ./requirements.txt
-```
 ___
-
-### :rocket: Run:
-- Run simply with 
+### :rocket: Run with Docker:
+- Api is dockerized with docker-compose, one command runs the Api server, Postgres server and PgAdmin
+- Make sure to have Docker installed, if on Windows use [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- Navigate to your project directory and run command
 
 ```bash
-uvicorn api.server:app --reload
+docker compose up
 ```
+
+- Verify the compose containers running with: 
+```bash
+docker ps
+```
+
+- **Thats it!**
+- **School System Api** is available on **localhost:8000**, **PgAdmin** is available on **localhost:8080** 
+- **Postgres Database** is externally available on **localhost:5433**, while for containers use **db:5432**
+
+>For running without docker, you can set .env USE_LOCAL_DB=True, which will instead use local sqlite database
+>> Use uvicorn api.server:app --reload for running without Docker
 ___
+
+
+
 
 ### :page_with_curl: Docs:
 
-- Visit **localhost:8000/docs** for interactive Swagger docs
+- Visit **localhost:8000/docs** for interactive Swagger UI docs, or **localhost:8000/redoc** for ReDoc docs.
 
-<img src="./github_images/naslovna.PNG" width="600"> 
+<img src="./github_images/docs1.PNG" width="600" height="410">
+<img src="./github_images/docs2.PNG" width="600" height="410"> 
 
 
 ___
