@@ -6,7 +6,6 @@ system integrated with [Google Calendar API](https://developers.google.com/calen
 
 Main idea is to create a ERP system to make it easier to manage tutoring school needs.
 Api is built on FastApi with Pydantic models for json serialization, async Sqlalchemy orm for database interaction,
-
 and Docker for easy deployment. 
 
 <img src="./github_images/calendar_snip.PNG" width="800">
