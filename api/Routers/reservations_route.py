@@ -2,9 +2,10 @@ from typing import List
 
 from fastapi import APIRouter, Query, status
 
+from api.Calendar_utils.calendar_service_manager import service_dependancy
+from api.db.db_manager import db_dependancy
+
 from .. import crud
-from ..calendar_service_manager import service_dependancy
-from ..db_manager import db_dependancy
 from ..schemas import ClassResponse, ReservationResponse
 
 router = APIRouter(prefix="/reservations", tags=["Reservations"])

@@ -1,10 +1,10 @@
 import datetime
 
 from sqlalchemy import (JSON, Boolean, Column, Date, DateTime, Float,
-                        ForeignKey, Integer, String, Text, Time)
+                        ForeignKey, Integer, String, Text)
 from sqlalchemy.orm import relationship
 
-from .db_manager import Base
+from api.db.db_manager import Base
 
 
 class Students(Base):

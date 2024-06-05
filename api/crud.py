@@ -1,5 +1,3 @@
-import datetime
-import os
 from datetime import date
 
 from fastapi import HTTPException, status
@@ -8,13 +6,15 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from .calendar_func import (add_event_to_calendar, add_reservation_to_calendar,
-                            delete_class_from_calendar,
-                            delete_reservation_from_calendar,
-                            update_event_calendar)
-from .calendar_service_manager import service_dependancy
+from api.Calendar_utils.calendar_func import (add_event_to_calendar,
+                                              add_reservation_to_calendar,
+                                              delete_class_from_calendar,
+                                              delete_reservation_from_calendar,
+                                              update_event_calendar)
+from api.Calendar_utils.calendar_service_manager import service_dependancy
+from api.db.models import *
+
 from .logger import *
-from .models import *
 
 
 async def delete_item(db: AsyncSession, id: int, Table: table):
@@ -492,14 +492,17 @@ async def get_invoice_student(db: AsyncSession, id: int):
         )
     return invoice_rusult.student
 
-async def pay_invoice(db:AsyncSession, id:int):
+
+async def pay_invoice(db: AsyncSession, id: int):
     """Pay student invoice"""
-    query = select(Invoices).filter(Invoices.id==id)
+    query = select(Invoices).filter(Invoices.id == id)
     result = await db.execute(query)
     target_invoice = result.scalars().first()
     if not target_invoice:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invoice ID not found")
-    target_invoice.payment_status=True
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Invoice ID not found"
+        )
+    target_invoice.payment_status = True
     await db.commit()
     await db.refresh(target_invoice)
     return target_invoice

@@ -2,9 +2,10 @@ from typing import List
 
 from fastapi import APIRouter, Query, status
 
+from api.db.db_manager import db_dependancy
+from api.db.models import Students
+
 from .. import crud
-from ..db_manager import db_dependancy
-from ..models import Students
 from ..schemas import StudentData, StudentResponse
 
 router = APIRouter(prefix="/students", tags=["Students"])

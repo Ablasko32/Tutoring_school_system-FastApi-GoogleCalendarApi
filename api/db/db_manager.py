@@ -1,17 +1,17 @@
+import os
 from typing import Annotated
 
 import dotenv
 from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import declarative_base
-import os
 
 dotenv.load_dotenv()
 
 if os.getenv("USE_LOCAL_DB"):
     DATABASE_URL = "sqlite+aiosqlite:///./database_new.db"
 else:
-    DATABASE_URL =os.getenv("POSTGRESQL_URL")
+    DATABASE_URL = os.getenv("POSTGRESQL_URL")
 
 
 Base = declarative_base()

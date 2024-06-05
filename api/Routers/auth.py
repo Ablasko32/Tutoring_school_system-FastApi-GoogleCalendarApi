@@ -1,6 +1,6 @@
 from fastapi import APIRouter, status
 
-from ..calendar_service_manager import service_dependancy
+from api.Calendar_utils.calendar_service_manager import service_dependancy
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

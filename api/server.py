@@ -3,9 +3,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from .db_manager import async_engine
+from api.db.db_manager import async_engine
+from api.db.models import *
+
 from .logger import *
-from .models import *
 from .Routers import (auth, classes_route, invoices_route, reservations_route,
                       students_route, teacher_pay_route, teachers_route)
 

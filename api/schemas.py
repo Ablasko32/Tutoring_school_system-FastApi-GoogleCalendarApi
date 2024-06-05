@@ -1,14 +1,13 @@
-import dataclasses
-from datetime import date, datetime, time
-from typing import List,Optional
-from pydantic import BaseModel,Field,EmailStr
+from datetime import date, datetime
+from typing import List, Optional
 
+from pydantic import BaseModel, EmailStr, Field
 
 
 class FrequencyBase(BaseModel):
-    by_day:str
-    freq:str
-    weeks:int
+    by_day: str
+    freq: str
+    weeks: int
 
 
 class StudentBase(BaseModel):
@@ -16,17 +15,23 @@ class StudentBase(BaseModel):
     last_name: str = Field(min_length=2)
     email: str = EmailStr()
     phone_num: str = Field(min_length=5)
-    parent_phone: Optional[str]=None
+    parent_phone: Optional[str] = None
     birth_year: int
+
+    class Config:
+        json_encoders = {EmailStr: lambda v: str(v)}
 
 
 class TeacherBase(BaseModel):
     first_name: str = Field(min_length=2)
     last_name: str = Field(min_length=2)
     email: str = EmailStr()
-    phone_num: str  = Field(min_length=5, description="Phone number of employee")
+    phone_num: str = Field(min_length=5, description="Phone number of employee")
     hourly: float = Field(description="Hourly pay rate for employee")
     hire_date: date = Field(description="Date of hire for employee, defaults to now")
+
+    class Config:
+        json_encoders = {EmailStr: lambda v: str(v)}
 
 
 class ClassesBase(BaseModel):
@@ -34,14 +39,15 @@ class ClassesBase(BaseModel):
     teacher_id: int = Field(description="ID of teacher leading the class")
     class_size: int = Field(description="Max class capacity")
     class_start: datetime = Field(description="Start of class datetime")
-    class_end: datetime = Field(description="End of class datetime, usually same date, moved for hours")
-    description: Optional[str]=None
-    frequency: Optional[FrequencyBase]=None
+    class_end: datetime = Field(
+        description="End of class datetime, usually same date, moved for hours"
+    )
+    description: Optional[str] = None
+    frequency: Optional[FrequencyBase] = None
 
 
 class StudentResponse(StudentBase):
     id: int
-
 
 
 class StudentData(StudentBase):
@@ -83,7 +89,6 @@ class ClassResponse(ClassesBase):
     event_id: str
 
 
-
 class ClassData(ClassesBase):
     class Config:
         json_schema_extra = {
@@ -106,10 +111,10 @@ class ReservationResponse(ClassResponse):
 class InvoicesBase(BaseModel):
     student_id: int = Field(description="ID of student")
     invoice_date: date = Field(description="Date of invoice creation")
-    description: Optional[str]=None
+    description: Optional[str] = None
     payment_status: bool = Field(description="Payment status, not payed-False")
     amount: float = Field(description="Amount for invoice payment")
-    class_id: Optional[int]=None
+    class_id: Optional[int] = None
 
 
 class InvoiceData(InvoicesBase):

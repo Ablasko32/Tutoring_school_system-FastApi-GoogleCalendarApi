@@ -3,9 +3,10 @@ from typing import List
 
 from fastapi import APIRouter, Query, status
 
+from api.db.db_manager import db_dependancy
+from api.db.models import Paychecks, TeacherHours
+
 from .. import crud
-from ..db_manager import db_dependancy
-from ..models import Paychecks, TeacherHours
 from ..schemas import PaycheckResponse, TeacherHoursData, TeacherHoursResponse
 
 router = APIRouter(prefix="/paycheck", tags=["Teacher paycheck"])

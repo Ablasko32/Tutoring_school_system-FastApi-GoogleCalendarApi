@@ -2,9 +2,10 @@ from typing import List
 
 from fastapi import APIRouter, Query, status
 
+from api.db.db_manager import db_dependancy
+from api.db.models import Invoices
+
 from .. import crud
-from ..db_manager import db_dependancy
-from ..models import Invoices
 from ..schemas import InvoiceData, InvoiceResponse, StudentResponse
 
 router = APIRouter(prefix="/invoices", tags=["Invoices"])
@@ -51,7 +52,10 @@ async def get_invoice_student(db: db_dependancy, id: int = Query(gt=0)):
     """Get student object linked to invoice via invoice ID"""
     return await crud.get_invoice_student(db, id)
 
-@router.put("/pay_invoice", status_code=status.HTTP_201_CREATED, response_model=InvoiceResponse)
-async def pay_student_invoice(db:db_dependancy, id:int=Query(gt=0)):
+
+@router.put(
+    "/pay_invoice", status_code=status.HTTP_201_CREATED, response_model=InvoiceResponse
+)
+async def pay_student_invoice(db: db_dependancy, id: int = Query(gt=0)):
     """Mark student invoice as payed"""
-    return await crud.pay_invoice(db,id)
+    return await crud.pay_invoice(db, id)
