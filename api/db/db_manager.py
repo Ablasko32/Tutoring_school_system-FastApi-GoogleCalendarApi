@@ -8,7 +8,7 @@ from sqlalchemy.orm import declarative_base
 
 dotenv.load_dotenv()
 
-if os.getenv("USE_LOCAL_DB"):
+if os.getenv("USE_LOCAL_DB") == True:
     DATABASE_URL = "sqlite+aiosqlite:///./database_new.db"
 else:
     DATABASE_URL = os.getenv("POSTGRESQL_URL")

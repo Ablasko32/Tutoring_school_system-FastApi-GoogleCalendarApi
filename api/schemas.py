@@ -166,4 +166,4 @@ class PaycheckBase(BaseModel):
 
 class PaycheckResponse(PaycheckBase):
     id: int
-    payment_date: Optional[date]=None
+    payment_date: Optional[date] = None
